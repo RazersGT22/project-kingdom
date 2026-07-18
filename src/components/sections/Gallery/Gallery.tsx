@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { galleryCopy, galleryItems } from "@/data";
 import { useScrollReveal } from "@/hooks";
 import { SectionHeading, Card } from "@/components/ui";
+import { GalleryComments } from "./GalleryComments";
 
 const ALL_CATEGORIES = ["Semua", ...Array.from(new Set(galleryItems.map((i) => i.category)))];
 
@@ -14,6 +16,14 @@ export function Gallery() {
   const filtered = galleryItems.filter(
     (item) => activeCategory === "Semua" || item.category === activeCategory,
   );
+
+  // Pas lightbox kebuka, matiin scroll halaman belakang biar cuma ada 1 scrollbar aktif
+  useEffect(() => {
+    document.body.style.overflow = selectedItem ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [selectedItem]);
 
   return (
     <section
@@ -99,61 +109,68 @@ export function Gallery() {
         </div>
       </div>
 
-      {/* Lightbox */}
-      {selectedItem && (
+      {/* Lightbox - di-portal-kan ke document.body biar 'fixed' beneran nempel ke layar, */}
+      {/* keluar dari pembungkus Lenis yang bisa punya transform dan bikin fixed jadi ke-kunci */}
+      {selectedItem && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-label={`Detail: ${selectedItem.title}`}
           onClick={() => setSelectedItem(null)}
         >
-          <div
-            className="relative max-w-3xl w-full border border-ember-gold/30 bg-[#0c0d10] rounded-xl overflow-y-auto max-h-[90vh] shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+          {/* Close - fixed di layar, gak ikut ke-scroll pas isi lightbox digulir */}
+          <button
+            onClick={() => setSelectedItem(null)}
+            className="fixed top-4 right-4 z-[110] flex h-9 w-9 items-center justify-center rounded-full bg-black/60 border border-ember-gold/30 text-ember-gold hover:bg-ember-gold hover:text-black transition-colors"
+            aria-label="Tutup pratinjau"
           >
-            {/* Close */}
-            <button
-              onClick={() => setSelectedItem(null)}
-              className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 border border-ember-gold/30 text-ember-gold hover:bg-ember-gold hover:text-black transition-colors"
-              aria-label="Tutup pratinjau"
-            >
-              ✕
-            </button>
+            ✕
+          </button>
 
-            {/* Real image full */}
-            <div className="aspect-[16/9] w-full relative overflow-hidden bg-[#1a1209]">
-              <img
-                src={selectedItem.file}
-                alt={selectedItem.title}
-                className="w-full h-full object-cover"
-              />
-              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0c0d10] via-transparent to-transparent" />
-            </div>
-
-            {/* Narrative info */}
-            <div className="p-6 md:p-8">
-              <span className="text-xs uppercase tracking-wider text-ember-gold font-bold">
-                {selectedItem.category}
-              </span>
-              <h3 className="font-heading text-2xl text-parchment-white mt-1 mb-3">
-                {selectedItem.title}
-              </h3>
-              <p className="text-sm text-parchment-white/70 leading-relaxed mb-4">
-                {selectedItem.desc}
-              </p>
-              {/* Lore divider */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-1 h-px bg-ember-gold/20" />
-                <span className="text-[10px] uppercase tracking-widest text-ember-gold/60">Kronik Kerajaan</span>
-                <div className="flex-1 h-px bg-ember-gold/20" />
+          <div
+            className="relative w-full h-full border-0 bg-[#0c0d10] overflow-y-auto shadow-2xl pt-20"
+            onClick={(e) => e.stopPropagation()}
+            data-lenis-prevent
+          >
+            <div className="max-w-3xl mx-auto w-full">
+              {/* Real image full */}
+              <div className="aspect-[16/9] w-full relative overflow-hidden bg-[#1a1209]">
+                <img
+                  src={selectedItem.file}
+                  alt={selectedItem.title}
+                  className="w-full h-full object-cover"
+                />
+                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#0c0d10] via-transparent to-transparent" />
               </div>
-              <p className="text-sm text-parchment-white/55 leading-relaxed italic">
-                {selectedItem.lore}
-              </p>
+
+              {/* Narrative info */}
+              <div className="p-6 md:p-8">
+                <span className="text-xs uppercase tracking-wider text-ember-gold font-bold">
+                  {selectedItem.category}
+                </span>
+                <h3 className="font-heading text-2xl text-parchment-white mt-1 mb-3">
+                  {selectedItem.title}
+                </h3>
+                <p className="text-sm text-parchment-white/70 leading-relaxed mb-4">
+                  {selectedItem.desc}
+                </p>
+                {/* Lore divider */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-1 h-px bg-ember-gold/20" />
+                  <span className="text-[10px] uppercase tracking-widest text-ember-gold/60">Kronik Kerajaan</span>
+                  <div className="flex-1 h-px bg-ember-gold/20" />
+                </div>
+                <p className="text-sm text-parchment-white/55 leading-relaxed italic">
+                  {selectedItem.lore}
+                </p>
+
+                <GalleryComments photoId={selectedItem.file} />
+              </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   );
