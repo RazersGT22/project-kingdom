@@ -52,7 +52,7 @@ export function GalleryComments({ photoId }: { photoId: string }) {
     const currentUser = netlifyIdentity.currentUser();
     if (currentUser) setUser(currentUser as unknown as IdentityUser);
 
-    netlifyIdentity.on("login", (u) => setUser(u as unknown as IdentityUser));
+    netlifyIdentity.on("login", (u: unknown) => setUser(u as unknown as IdentityUser));
     netlifyIdentity.on("logout", () => setUser(null));
 
     return () => {
