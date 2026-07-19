@@ -122,6 +122,6 @@ body {
 
 /* Pastikan pop-up login Netlify Identity selalu tampil paling atas,
    di atas lightbox galeri (yang juga posisinya fixed dengan z-index tinggi) */
-iframe[title="Netlify Identity Widget"] {
+iframe[title="Netlify identity widget" i] {
   z-index: 2147483647 !important;
 }
