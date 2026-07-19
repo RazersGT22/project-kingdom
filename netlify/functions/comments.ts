@@ -65,6 +65,36 @@ async function getUserFromAuthHeader(req: Request): Promise<IdentityUser | null>
   return (await res.json()) as IdentityUser;
 }
 
+// Kirim email notifikasi ke admin tiap ada komentar baru masuk.
+// Sengaja dibungkus try-catch sendiri: kalau pengiriman email gagal,
+// komentar tetap tersimpan normal (nggak ikut gagal gara-gara email)
+async function sendNewCommentEmail(params: {
+  photoId: string;
+  userName: string;
+  content: string;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return;
+
+  try {
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "RZ Survival <onboarding@resend.dev>",
+        to: "razergt44@gmail.com",
+        subject: `Komentar baru di galeri (${params.photoId})`,
+        html: `<p><strong>${params.userName}</strong> baru aja komentar:</p><p>"${params.content}"</p><p style="color:#888;font-size:12px">Foto: ${params.photoId}</p>`,
+      }),
+    });
+  } catch {
+    // sengaja diabaikan, jangan sampai bikin request utama gagal
+  }
+}
+
 export default async (req: Request, context: Context) => {
   const url = new URL(req.url);
   const client = await getClient();
@@ -153,7 +183,14 @@ export default async (req: Request, context: Context) => {
         ]
       );
 
-      return Response.json({ comment: result.rows[0] }, { status: 201 });
+      const savedComment = result.rows[0];
+      await sendNewCommentEmail({
+        photoId: savedComment.photo_id,
+        userName: savedComment.user_name,
+        content: savedComment.content,
+      });
+
+      return Response.json({ comment: savedComment }, { status: 201 });
     }
 
     if (req.method === "DELETE") {
