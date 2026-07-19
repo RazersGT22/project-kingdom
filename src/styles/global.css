@@ -119,3 +119,9 @@ body {
 .animate-fade-in {
   animation: fade-in 0.2s ease-out forwards;
 }
+
+/* Pastikan pop-up login Netlify Identity selalu tampil paling atas,
+   di atas lightbox galeri (yang juga posisinya fixed dengan z-index tinggi) */
+iframe[title="Netlify Identity Widget"] {
+  z-index: 2147483647 !important;
+}
