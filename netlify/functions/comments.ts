@@ -100,6 +100,29 @@ export default async (req: Request, context: Context) => {
   const client = await getClient();
 
   try {
+    // GET /api/comments/banned — admin lihat semua akun yang diblokir (global, semua foto)
+    if (req.method === "GET" && url.pathname.includes("/banned")) {
+      const admin = await getUserFromAuthHeader(req);
+      if (!admin || !ADMIN_EMAILS.includes(admin.email)) {
+        return Response.json({ error: "Cuma admin yang boleh lihat daftar ini" }, { status: 403 });
+      }
+
+      const result = await client.query<{ user_id: string; display_name: string | null; banned_at: string }>(
+        `select bu.user_id, bu.banned_at,
+                (select c.user_name from comments c where c.user_id = bu.user_id limit 1) as display_name
+         from banned_users bu
+         order by bu.banned_at desc`
+      );
+
+      return Response.json({
+        banned: result.rows.map((r) => ({
+          userId: r.user_id,
+          displayName: r.display_name ?? r.user_id,
+          bannedAt: r.banned_at,
+        })),
+      });
+    }
+
     if (req.method === "GET") {
       const photoId = url.searchParams.get("photo_id");
       if (!photoId) {

@@ -37,6 +37,20 @@ export function GalleryComments({ photoId }: { photoId: string }) {
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [bannedUserIds, setBannedUserIds] = useState<string[]>([]);
+  const [bannedList, setBannedList] = useState<{ userId: string; displayName: string; bannedAt: string }[]>([]);
+  const [showBanPanel, setShowBanPanel] = useState(false);
+
+  const isAdmin = !!(user?.email && ADMIN_EMAILS.includes(user.email));
+
+  const loadBannedList = useCallback(async () => {
+    if (!user?.token?.access_token) return;
+    const res = await fetch("/api/comments/banned", {
+      headers: { Authorization: `Bearer ${user.token.access_token}` },
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    setBannedList(data.banned ?? []);
+  }, [user?.token?.access_token]);
 
   const loadComments = useCallback(async () => {
     setLoading(true);
@@ -116,6 +130,7 @@ export function GalleryComments({ photoId }: { photoId: string }) {
       headers: { Authorization: `Bearer ${user.token.access_token}` },
     });
     await loadComments();
+    await loadBannedList();
   }
 
   function renderComment(node: CommentNode, depth: number) {
@@ -209,6 +224,18 @@ export function GalleryComments({ photoId }: { photoId: string }) {
           Komentar {total > 0 && `(${total})`}
         </h4>
         <div className="flex items-center gap-3">
+          {isAdmin && (
+            <button
+              onClick={() => {
+                const next = !showBanPanel;
+                setShowBanPanel(next);
+                if (next) loadBannedList();
+              }}
+              className="text-[11px] text-red-400/70 hover:text-red-400"
+            >
+              {showBanPanel ? "Tutup" : "Kelola Blokir"}
+            </button>
+          )}
           <button
             onClick={() => setOrder(order === "oldest" ? "newest" : "oldest")}
             className="text-[11px] text-parchment-white/50 hover:text-parchment-white/80"
@@ -235,6 +262,39 @@ export function GalleryComments({ photoId }: { photoId: string }) {
           )}
         </div>
       </div>
+
+      {showBanPanel && isAdmin && (
+        <div className="mb-6 p-4 rounded-lg border border-red-500/20 bg-red-500/5">
+          <h5 className="text-xs uppercase tracking-wider text-red-400 mb-3">Akun yang Diblokir</h5>
+          {bannedList.length === 0 ? (
+            <p className="text-xs text-parchment-white/40">Belum ada akun yang diblokir.</p>
+          ) : (
+            <div className="space-y-2">
+              {bannedList.map((b) => (
+                <div key={b.userId} className="flex items-center justify-between text-sm">
+                  <span className="text-parchment-white/80">{b.displayName}</span>
+                  <button
+                    onClick={async () => {
+                      if (!user?.token?.access_token) return;
+                      const ok = window.confirm(`Buka blokir "${b.displayName}"?`);
+                      if (!ok) return;
+                      await fetch(`/api/comments/unban/${b.userId}`, {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${user.token.access_token}` },
+                      });
+                      await loadBannedList();
+                      await loadComments();
+                    }}
+                    className="text-[11px] uppercase tracking-wide text-emerald-400/70 hover:text-emerald-400"
+                  >
+                    Buka Blokir
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {user ? (
         <div className="flex gap-2 mb-6">
