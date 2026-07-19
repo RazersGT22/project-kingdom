@@ -110,7 +110,15 @@ export default async (req: Request, context: Context) => {
         `select * from comments where photo_id = $1 order by created_at ${newest ? "desc" : "asc"}`,
         [photoId]
       );
-      return Response.json({ comments: buildTree(result.rows), total: result.rows.length });
+
+      const bannedResult = await client.query<{ user_id: string }>(`select user_id from banned_users`);
+      const bannedUserIds = bannedResult.rows.map((r) => r.user_id);
+
+      return Response.json({
+        comments: buildTree(result.rows),
+        total: result.rows.length,
+        bannedUserIds,
+      });
     }
 
     // POST /api/comments/ban/:userId — admin blokir akun biar nggak bisa komentar lagi

@@ -36,6 +36,7 @@ export function GalleryComments({ photoId }: { photoId: string }) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [bannedUserIds, setBannedUserIds] = useState<string[]>([]);
 
   const loadComments = useCallback(async () => {
     setLoading(true);
@@ -44,6 +45,7 @@ export function GalleryComments({ photoId }: { photoId: string }) {
       const data = await res.json();
       setComments(data.comments ?? []);
       setTotal(data.total ?? 0);
+      setBannedUserIds(data.bannedUserIds ?? []);
     } finally {
       setLoading(false);
     }
@@ -100,16 +102,20 @@ export function GalleryComments({ photoId }: { photoId: string }) {
     await loadComments();
   }
 
-  async function banUser(targetUserId: string, targetName: string) {
+  async function toggleBan(targetUserId: string, targetName: string, currentlyBanned: boolean) {
     if (!user?.token?.access_token) return;
-    const ok = window.confirm(`Blokir "${targetName}" biar nggak bisa komentar lagi? Komentar lamanya tetap ada.`);
+    const ok = window.confirm(
+      currentlyBanned
+        ? `Buka blokir "${targetName}" biar bisa komentar lagi?`
+        : `Blokir "${targetName}" biar nggak bisa komentar lagi? Komentar lamanya tetap ada.`
+    );
     if (!ok) return;
 
-    await fetch(`/api/comments/ban/${targetUserId}`, {
+    await fetch(`/api/comments/${currentlyBanned ? "unban" : "ban"}/${targetUserId}`, {
       method: "POST",
       headers: { Authorization: `Bearer ${user.token.access_token}` },
     });
-    alert(`"${targetName}" berhasil diblokir.`);
+    await loadComments();
   }
 
   function renderComment(node: CommentNode, depth: number) {
@@ -133,6 +139,11 @@ export function GalleryComments({ photoId }: { photoId: string }) {
               <span className="text-[10px] text-parchment-white/40">
                 {new Date(node.created_at).toLocaleDateString("id-ID")}
               </span>
+              {bannedUserIds.includes(node.user_id) && (
+                <span className="text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/30">
+                  Diblokir
+                </span>
+              )}
             </div>
             <p className="text-sm text-parchment-white/75 leading-relaxed mt-1 break-words">{node.content}</p>
             <div className="flex gap-3 mt-1">
@@ -154,10 +165,14 @@ export function GalleryComments({ photoId }: { photoId: string }) {
               ) : null}
               {user?.email && ADMIN_EMAILS.includes(user.email) && user.id !== node.user_id && (
                 <button
-                  onClick={() => banUser(node.user_id, node.user_name)}
-                  className="text-[11px] uppercase tracking-wide text-red-500/70 hover:text-red-500"
+                  onClick={() => toggleBan(node.user_id, node.user_name, bannedUserIds.includes(node.user_id))}
+                  className={`text-[11px] uppercase tracking-wide ${
+                    bannedUserIds.includes(node.user_id)
+                      ? "text-emerald-400/70 hover:text-emerald-400"
+                      : "text-red-500/70 hover:text-red-500"
+                  }`}
                 >
-                  Blokir
+                  {bannedUserIds.includes(node.user_id) ? "Buka Blokir" : "Blokir"}
                 </button>
               )}
             </div>

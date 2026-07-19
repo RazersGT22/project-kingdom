@@ -6,16 +6,29 @@ import { SectionHeading, Card } from "@/components/ui";
 import { GalleryComments } from "./GalleryComments";
 
 const ALL_CATEGORIES = ["Semua", ...Array.from(new Set(galleryItems.map((i) => i.category)))];
+const ITEMS_PER_PAGE = 9; // 3 baris x 3 kolom per halaman
 
 export function Gallery() {
   const ref = useRef<HTMLElement>(null);
   useScrollReveal(ref);
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [selectedItem, setSelectedItem] = useState<(typeof galleryItems)[0] | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = galleryItems.filter(
     (item) => activeCategory === "Semua" || item.category === activeCategory,
   );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
+  // Balik ke halaman 1 tiap kali kategori filter diganti
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory]);
 
   // Pas lightbox kebuka, matiin scroll halaman belakang biar cuma ada 1 scrollbar aktif
   useEffect(() => {
@@ -64,8 +77,8 @@ export function Gallery() {
         </div>
 
         {/* Grid galeri */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {filtered.map((item) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {paginated.map((item) => (
             <button
               key={item.id}
               onClick={() => setSelectedItem(item)}
@@ -107,6 +120,44 @@ export function Gallery() {
             </button>
           ))}
         </div>
+
+        {/* Navigasi halaman - cuma muncul kalau fotonya lebih dari 1 halaman */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mb-12">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-2 rounded-lg text-xs uppercase tracking-wider border border-parchment-white/10 text-parchment-white/60 hover:border-ember-gold/30 hover:text-ember-gold disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman sebelumnya"
+            >
+              ← Sebelumnya
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                aria-current={currentPage === page ? "page" : undefined}
+                className={`w-9 h-9 rounded-lg text-xs font-heading transition-colors border ${
+                  currentPage === page
+                    ? "border-ember-gold bg-ember-gold/10 text-ember-gold"
+                    : "border-parchment-white/10 text-parchment-white/60 hover:border-ember-gold/30 hover:text-ember-gold"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-2 rounded-lg text-xs uppercase tracking-wider border border-parchment-white/10 text-parchment-white/60 hover:border-ember-gold/30 hover:text-ember-gold disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label="Halaman selanjutnya"
+            >
+              Selanjutnya →
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Lightbox - di-portal-kan ke document.body biar 'fixed' beneran nempel ke layar, */}
