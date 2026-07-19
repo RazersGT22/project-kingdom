@@ -24,6 +24,9 @@ interface IdentityUser {
   user_metadata?: { full_name?: string; avatar_url?: string };
 }
 
+// Email yang boleh hapus komentar siapa aja (bukan cuma punya sendiri)
+const ADMIN_EMAILS = ["frendigr.47@gmail.com"];
+
 function buildTree(rows: CommentRow[]): CommentNode[] {
   const byId = new Map<string, CommentNode>();
   const roots: CommentNode[] = [];
@@ -80,10 +83,52 @@ export default async (req: Request, context: Context) => {
       return Response.json({ comments: buildTree(result.rows), total: result.rows.length });
     }
 
+    // POST /api/comments/ban/:userId — admin blokir akun biar nggak bisa komentar lagi
+    if (req.method === "POST" && url.pathname.includes("/ban/")) {
+      const admin = await getUserFromAuthHeader(req);
+      if (!admin || !ADMIN_EMAILS.includes(admin.email)) {
+        return Response.json({ error: "Cuma admin yang boleh blokir akun" }, { status: 403 });
+      }
+
+      const targetUserId = url.pathname.split("/ban/").pop();
+      if (!targetUserId) {
+        return Response.json({ error: "user_id wajib diisi di URL" }, { status: 400 });
+      }
+
+      await client.query(
+        `insert into banned_users (user_id, banned_by) values ($1, $2)
+         on conflict (user_id) do nothing`,
+        [targetUserId, admin.email]
+      );
+
+      return Response.json({ banned: targetUserId });
+    }
+
+    // POST /api/comments/unban/:userId — admin cabut blokir
+    if (req.method === "POST" && url.pathname.includes("/unban/")) {
+      const admin = await getUserFromAuthHeader(req);
+      if (!admin || !ADMIN_EMAILS.includes(admin.email)) {
+        return Response.json({ error: "Cuma admin yang boleh cabut blokir" }, { status: 403 });
+      }
+
+      const targetUserId = url.pathname.split("/unban/").pop();
+      if (!targetUserId) {
+        return Response.json({ error: "user_id wajib diisi di URL" }, { status: 400 });
+      }
+
+      await client.query(`delete from banned_users where user_id = $1`, [targetUserId]);
+      return Response.json({ unbanned: targetUserId });
+    }
+
     if (req.method === "POST") {
       const user = await getUserFromAuthHeader(req);
       if (!user) {
         return Response.json({ error: "Kamu harus login dulu untuk komentar" }, { status: 401 });
+      }
+
+      const banned = await client.query(`select 1 from banned_users where user_id = $1`, [user.id]);
+      if ((banned.rowCount ?? 0) > 0) {
+        return Response.json({ error: "Akun kamu diblokir dari komentar" }, { status: 403 });
       }
 
       const body = await req.json().catch(() => null);
@@ -122,9 +167,13 @@ export default async (req: Request, context: Context) => {
         return Response.json({ error: "id komentar wajib diisi di URL" }, { status: 400 });
       }
 
+      const isAdmin = ADMIN_EMAILS.includes(user.email);
+
       const result = await client.query<{ id: string }>(
-        `delete from comments where id = $1 and user_id = $2 returning id`,
-        [id, user.id]
+        isAdmin
+          ? `delete from comments where id = $1 returning id`
+          : `delete from comments where id = $1 and user_id = $2 returning id`,
+        isAdmin ? [id] : [id, user.id]
       );
 
       if (result.rows.length === 0) {

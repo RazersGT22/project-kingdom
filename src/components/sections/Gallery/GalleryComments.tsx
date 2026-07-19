@@ -17,12 +17,14 @@ interface CommentNode {
 }
 
 interface IdentityUser {
+  id?: string;
   token?: { access_token: string };
   user_metadata?: { full_name?: string; avatar_url?: string };
   email: string;
 }
 
 const MAX_VISUAL_INDENT = 6; // biar di layar kecil nggak kegeser kebablasan
+const ADMIN_EMAILS = ["frendigr.47@gmail.com"];
 
 export function GalleryComments({ photoId }: { photoId: string }) {
   const [user, setUser] = useState<IdentityUser | null>(null);
@@ -86,6 +88,30 @@ export function GalleryComments({ photoId }: { photoId: string }) {
     }
   }
 
+  async function deleteComment(id: string) {
+    if (!user?.token?.access_token) return;
+    const ok = window.confirm("Hapus komentar ini? Balasan di bawahnya juga ikut terhapus.");
+    if (!ok) return;
+
+    await fetch(`/api/comments/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${user.token.access_token}` },
+    });
+    await loadComments();
+  }
+
+  async function banUser(targetUserId: string, targetName: string) {
+    if (!user?.token?.access_token) return;
+    const ok = window.confirm(`Blokir "${targetName}" biar nggak bisa komentar lagi? Komentar lamanya tetap ada.`);
+    if (!ok) return;
+
+    await fetch(`/api/comments/ban/${targetUserId}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${user.token.access_token}` },
+    });
+    alert(`"${targetName}" berhasil diblokir.`);
+  }
+
   function renderComment(node: CommentNode, depth: number) {
     const indent = Math.min(depth, MAX_VISUAL_INDENT) * 20;
 
@@ -109,14 +135,32 @@ export function GalleryComments({ photoId }: { photoId: string }) {
               </span>
             </div>
             <p className="text-sm text-parchment-white/75 leading-relaxed mt-1 break-words">{node.content}</p>
-            {user && (
-              <button
-                onClick={() => setReplyingTo(replyingTo === node.id ? null : node.id)}
-                className="text-[11px] uppercase tracking-wide text-ember-gold/80 hover:text-ember-gold mt-1"
-              >
-                Balas
-              </button>
-            )}
+            <div className="flex gap-3 mt-1">
+              {user && (
+                <button
+                  onClick={() => setReplyingTo(replyingTo === node.id ? null : node.id)}
+                  className="text-[11px] uppercase tracking-wide text-ember-gold/80 hover:text-ember-gold"
+                >
+                  Balas
+                </button>
+              )}
+              {user?.id === node.user_id || (user?.email && ADMIN_EMAILS.includes(user.email)) ? (
+                <button
+                  onClick={() => deleteComment(node.id)}
+                  className="text-[11px] uppercase tracking-wide text-red-400/70 hover:text-red-400"
+                >
+                  Hapus
+                </button>
+              ) : null}
+              {user?.email && ADMIN_EMAILS.includes(user.email) && user.id !== node.user_id && (
+                <button
+                  onClick={() => banUser(node.user_id, node.user_name)}
+                  className="text-[11px] uppercase tracking-wide text-red-500/70 hover:text-red-500"
+                >
+                  Blokir
+                </button>
+              )}
+            </div>
 
             {replyingTo === node.id && (
               <div className="mt-2 flex gap-2">
