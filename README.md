@@ -42,8 +42,8 @@ npm run format
 Setiap foto di Gallery sekarang punya kolom komentar bertingkat (nested replies), dengan login wajib pakai akun Google.
 
 **File yang ditambahkan/diubah:**
-- `migrations/0001_create_comments.sql` — skema tabel `comments` di Netlify Database (Postgres)
-- `netlify/functions/comments.ts` — API serverless: `GET/POST /api/comments`, `DELETE /api/comments/:id`
+- `netlify/database/migrations/0001_create_comments/migration.sql` — skema tabel `comments` di Netlify Database (Postgres). Ditaruh di lokasi ini karena Netlify otomatis menjalankan migration di sini tiap deploy — nggak perlu dijalanin manual
+- `netlify/functions/comments.ts` — API serverless: `GET/POST /api/comments`, `DELETE /api/comments/:id` (pakai `@netlify/database` + `pg`)
 - `netlify.toml` — konfigurasi build & lokasi folder function
 - `src/components/sections/Gallery/GalleryComments.tsx` — komponen UI komentar
 - `src/components/sections/Gallery/Gallery.tsx` — diintegrasikan, `GalleryComments` muncul di lightbox foto
@@ -56,19 +56,19 @@ Setiap foto di Gallery sekarang punya kolom komentar bertingkat (nested replies)
 
 **Dependency yang perlu di-install:**
 ```bash
-npm install netlify-identity-widget @netlify/neon
-npm install -D @netlify/functions
+npm install netlify-identity-widget @netlify/database pg
+npm install -D @netlify/functions @types/netlify-identity-widget @types/pg
 ```
 
-**Environment variable & setup dashboard** — lihat instruksi step-by-step yang dikirim terpisah (setup Netlify Database, Google OAuth di Google Cloud Console, dan Netlify Identity provider).
+**Setup dashboard yang sudah dilakukan** — Netlify Identity + Google diaktifkan lewat dashboard (pakai konfigurasi default, tidak perlu Google Cloud Console sendiri), Netlify Database dibuat otomatis oleh Netlify. Detail lengkap & histori setup ada di `catatan.md`.
 
 **Catatan teknis (bug yang sempat ketemu & solusinya):** karena project ini pakai Lenis (smooth-scroll) yang dipasang di `PageWrapper`, elemen `position: fixed` biasa (lightbox & tombolnya) jadi "terkunci" di dalam pembungkus Lenis dan nggak beneran nempel ke layar — bikin navbar nutupin bagian atas lightbox dan tombol close ikut ke-scroll hilang. Solusinya: lightbox di-render pakai `createPortal` (React) langsung ke `document.body`, keluar dari pembungkus Lenis. Selain itu, Lenis juga "mencegat" semua gerakan scroll di halaman — biar scroll di dalam lightbox tetap jalan normal, div-nya dikasih atribut `data-lenis-prevent` yang bikin Lenis nggak ikut campur di situ. Detail lengkap ada di `catatan.md`.
 
 ## Struktur Folder
 
 ```
-migrations/                 # SQL migration untuk Netlify Database
 netlify/
+├── database/migrations/      # SQL migration untuk Netlify Database (dijalankan otomatis pas deploy)
 └── functions/               # Netlify Functions (API komentar, dsb)
 src/
 ├── components/
