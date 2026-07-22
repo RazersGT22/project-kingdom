@@ -13,8 +13,8 @@ export default {
         "parchment-white": "#F4EDE0",
       },
       fontFamily: {
-        // TODO: ganti dengan font heraldik final dari Asset Brief
-        heading: ["Georgia", "serif"],
+        // Font heraldik final: Cinzel (Google Fonts) — dipilih dari sesi review tipografi
+        heading: ["Cinzel", "Georgia", "serif"],
         body: ["system-ui", "sans-serif"],
       },
     },

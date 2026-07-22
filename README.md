@@ -1,10 +1,41 @@
 # Project Kingdom
 
+## 🤖 WAJIB DIBACA — Instruksi untuk AI/Asisten yang Mengerjakan Project Ini
+
+> Project ini dikerjakan bergantian dari beberapa akun/sesi berbeda. Kalau kamu belum
+> baca **`PENTING.md`** di root project, baca itu dulu — file itu jadi pintu masuk yang
+> nunjukin urutan baca: `README.md` (file ini) → `CHANGELOG.md` → `RENCANA.md` → folder
+> `catatan/` kalau perlu detail lebih dalam.
+
+> Ini berlaku otomatis tiap kali ada AI (Claude, ChatGPT, Antigravity, atau lainnya) yang
+> diberi akses ke folder project ini — tidak perlu diminta ulang oleh user tiap sesi.
+>
+> **Setiap kali kamu mengubah/menambah file atau folder di project ini, WAJIB lakukan 3 hal:**
+>
+> 1. **Update `CHANGELOG.md`** — tambah entry versi baru (ikuti aturan format & "jangan timpa
+>    yang lama" yang tertulis di file itu sendiri)
+> 2. **Update/buat file di folder `catatan/`** — tulis detail teknis lengkap: apa yang diubah,
+>    kenapa milih cara itu, bug yang ditemukan & solusinya, keputusan desain, dsb. Ikuti gaya
+>    penulisan file `catatan/` yang sudah ada (numbered, per-topik, pakai tabel/poin)
+> 3. **Berikan hasil akhir dalam bentuk ZIP folder** yang strukturnya PERSIS sama dengan struktur
+>    folder asli project ini (path lengkap tiap file dari root) — supaya user tinggal extract lalu
+>    drag-drop/timpa langsung ke folder kerja mereka, tanpa perlu mindahin file satu-satu manual
+>
+> User biasanya kerja di folder salinan/percobaan dulu sebelum menjadikannya folder utama —
+> jangan asumsikan perubahanmu langsung "live", tapi tetap ikuti 3 langkah di atas setiap saat.
+
 Skeleton project React untuk **RZ Survival: Interactive Medieval Experience**.
 Dibangun sesuai `Project Bible (01)`, `Tech Bible (05)`, dan `Project Implementation Guide (03)`.
 
 Status: **skeleton/pondasi**. Copy, asset, dan animasi final belum diimplementasikan —
 ditandai `TODO` di seluruh project. Kelanjutan pengerjaan dilakukan oleh Google Antigravity AI.
+
+> 📌 **Riwayat pembaruan project ada di `CHANGELOG.md`** (file terpisah, di root folder ini juga).
+> Setiap ada perubahan baru pada project, tambahkan entry baru di `CHANGELOG.md` — jangan di sini.
+>
+> 📋 **Rencana kerja yang belum dieksekusi ada di `RENCANA.md`** (file terpisah juga). Cek file
+> ini dulu sebelum mulai kerja baru — kalau ada rencana yang belum selesai, lanjutin sesuai
+> urutan di situ (biasanya 1 section/langkah per waktu, jangan borongan banyak sekaligus).
 
 ## Stack
 
@@ -76,7 +107,7 @@ src/
 │   ├── sections/      # 12 section (Opening ... JoinServer)
 │   ├── ui/             # Button, Card, Icon, SectionHeading
 │   └── layers/          # TransitionLayer, CursorLayer, AmbientLayer
-├── hooks/                # useScrollReveal, useLenisScroll, usePathSelection
+├── hooks/                # useScrollReveal, useParallax, useLenisScroll, usePathSelection
 ├── context/               # PathContext (activePath global)
 ├── providers/              # PathProvider, AppProviders
 ├── data/                    # copy per section/archetype (placeholder TODO)

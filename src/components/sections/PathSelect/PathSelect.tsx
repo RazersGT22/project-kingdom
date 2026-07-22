@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { archetypes, pathSelectCopy } from "@/data";
-import { useScrollReveal, usePathSelection } from "@/hooks";
+import { useStaggerReveal, usePathSelection } from "@/hooks";
 import { SectionHeading, Button } from "@/components/ui";
 import { scrollToSection } from "@/utils";
 import { PathCard } from "./PathCard";
@@ -8,7 +8,7 @@ import { PathCard } from "./PathCard";
 // Project Bible Bab 6 & 8 — titik cabang personalisasi utama.
 export function PathSelect() {
   const ref = useRef<HTMLElement>(null);
-  useScrollReveal(ref);
+  useStaggerReveal(ref);
   const { activePath, selectPath } = usePathSelection();
 
   return (
@@ -24,12 +24,17 @@ export function PathSelect() {
       />
 
       <div className="relative z-10 max-w-6xl mx-auto w-full">
-        <SectionHeading
-          eyebrow="Pilih Jalanmu"
-          title={pathSelectCopy.headline}
-          className="mb-4"
-        />
-        <p className="max-w-2xl text-parchment-white/60 mb-12 text-base md:text-lg leading-relaxed">
+        <div data-reveal>
+          <SectionHeading
+            eyebrow="Pilih Jalanmu"
+            title={pathSelectCopy.headline}
+            className="mb-4"
+          />
+        </div>
+        <p
+          className="max-w-2xl text-parchment-white/60 mb-12 text-base md:text-lg leading-relaxed"
+          data-reveal
+        >
           {pathSelectCopy.body}
         </p>
 
@@ -40,17 +45,18 @@ export function PathSelect() {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-12"
         >
           {archetypes.map((archetype) => (
-            <PathCard
-              key={archetype.id}
-              archetype={archetype}
-              isActive={activePath === archetype.id}
-              onSelect={selectPath}
-            />
+            <div key={archetype.id} data-reveal>
+              <PathCard
+                archetype={archetype}
+                isActive={activePath === archetype.id}
+                onSelect={selectPath}
+              />
+            </div>
           ))}
         </div>
 
         {/* CTA - muncul setelah archetype dipilih, tetap tersedia meski belum pilih */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4" data-reveal>
           <Button
             variant="primary"
             className={`text-base py-4 min-w-[220px] transition-opacity duration-300 ${

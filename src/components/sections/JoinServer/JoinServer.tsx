@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { joinServerCopy } from "@/data";
-import { useScrollReveal } from "@/hooks";
+import { useStaggerReveal } from "@/hooks";
 import { SectionHeading, Card, Button } from "@/components/ui";
 
 const faqList = [
@@ -20,7 +20,7 @@ const faqList = [
 
 export function JoinServer() {
   const ref = useRef<HTMLElement>(null);
-  useScrollReveal(ref);
+  useStaggerReveal(ref);
   const [copied, setCopied] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
@@ -65,7 +65,7 @@ export function JoinServer() {
       />
 
       <div className="relative z-10 max-w-5xl mx-auto w-full">
-        <div className="text-center mb-12">
+        <div className="text-center mb-12" data-reveal>
           <SectionHeading
             eyebrow="Gerbang Masuk"
             title={joinServerCopy.headline}
@@ -77,7 +77,7 @@ export function JoinServer() {
         </div>
 
         {/* IP and Connection Box */}
-        <div className="relative mb-16 max-w-3xl mx-auto">
+        <div className="relative mb-16 max-w-3xl mx-auto" data-reveal>
           {/* Accent glow behind box */}
           <div className="absolute inset-0 bg-ember-gold/10 rounded-2xl blur-lg pointer-events-none" />
           
@@ -111,6 +111,7 @@ export function JoinServer() {
           <a
             href="#discord"
             onClick={(e) => e.preventDefault()}
+            data-reveal
             className="group block border border-parchment-white/10 bg-obsidian-night/30 hover:border-ember-gold/40 hover:bg-ember-gold/5 p-6 rounded-xl transition-all duration-300"
           >
             <span className="text-3xl block mb-2" aria-hidden="true">💬</span>
@@ -121,6 +122,7 @@ export function JoinServer() {
           <a
             href="#vote"
             onClick={(e) => e.preventDefault()}
+            data-reveal
             className="group block border border-parchment-white/10 bg-obsidian-night/30 hover:border-ember-gold/40 hover:bg-ember-gold/5 p-6 rounded-xl transition-all duration-300"
           >
             <span className="text-3xl block mb-2" aria-hidden="true">🗳️</span>
@@ -131,6 +133,7 @@ export function JoinServer() {
           <a
             href="#donate"
             onClick={(e) => e.preventDefault()}
+            data-reveal
             className="group block border border-parchment-white/10 bg-obsidian-night/30 hover:border-ember-gold/40 hover:bg-ember-gold/5 p-6 rounded-xl transition-all duration-300"
           >
             <span className="text-3xl block mb-2" aria-hidden="true">💎</span>
@@ -140,7 +143,7 @@ export function JoinServer() {
         </div>
 
         {/* FAQs Short Accordion */}
-        <div className="max-w-3xl mx-auto mb-16">
+        <div className="max-w-3xl mx-auto mb-16" data-reveal>
           <h3 className="font-heading text-xl text-ember-gold mb-6 text-center">Pertanyaan Umum (FAQ)</h3>
           
           <div className="flex flex-col gap-4">
@@ -170,7 +173,7 @@ export function JoinServer() {
         </div>
 
         {/* Big Final CTA */}
-        <div className="text-center pt-4">
+        <div className="text-center pt-4" data-reveal>
           <a
             href="#join"
             onClick={handleCopyIp}

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { dungeonCopy } from "@/data";
-import { useScrollReveal } from "@/hooks";
+import { useStaggerReveal, useParallax } from "@/hooks";
 import { SectionHeading, Card, Button } from "@/components/ui";
 import { scrollToSection } from "@/utils";
 import type { ArchetypeId } from "@/types";
@@ -47,7 +47,9 @@ const dungeonList = [
 
 export function Dungeon({ activePath }: DungeonProps) {
   const ref = useRef<HTMLElement>(null);
-  useScrollReveal(ref);
+  const bgRef = useRef<HTMLDivElement>(null);
+  useStaggerReveal(ref);
+  useParallax(bgRef, 0.6);
   const [selectedId, setSelectedId] = useState("mines");
   const copy = dungeonCopy[activePath ?? "citizen"];
   const activeDungeon = dungeonList.find((d) => d.id === selectedId) || dungeonList[0];
@@ -56,12 +58,23 @@ export function Dungeon({ activePath }: DungeonProps) {
     <section
       id="dungeon"
       ref={ref}
-      className="relative min-h-screen flex flex-col justify-center px-6 py-24"
+      className="relative min-h-screen flex flex-col justify-center px-6 py-24 overflow-hidden"
     >
       {/* Background gradients */}
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-b from-obsidian-night via-[#0e0c0f] to-obsidian-night pointer-events-none"
+      />
+      {/* Layer parallax — glow ungu redup + motif titik, sesuai tema dungeon yang misterius */}
+      <div
+        ref={bgRef}
+        aria-hidden="true"
+        className="absolute -inset-y-32 inset-x-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 25% 25%, rgba(88,60,120,0.12) 0%, transparent 45%), radial-gradient(circle at 75% 75%, rgba(201,162,39,0.06) 0%, transparent 40%), radial-gradient(rgba(244,237,224,0.10) 1px, transparent 1px)",
+          backgroundSize: "auto, auto, 44px 44px",
+        }}
       />
 
       {/* Top Divider */}
@@ -71,13 +84,18 @@ export function Dungeon({ activePath }: DungeonProps) {
       />
 
       <div className="relative z-10 max-w-6xl mx-auto w-full">
-        <SectionHeading
-          eyebrow="Dungeon & Labirin"
-          title={copy.headline}
-          className="mb-6"
-        />
+        <div data-reveal>
+          <SectionHeading
+            eyebrow="Dungeon & Labirin"
+            title={copy.headline}
+            className="mb-6"
+          />
+        </div>
 
-        <p className="max-w-3xl text-base md:text-lg text-parchment-white/70 leading-relaxed mb-12">
+        <p
+          className="max-w-3xl text-base md:text-lg text-parchment-white/70 leading-relaxed mb-12"
+          data-reveal
+        >
           {copy.body}
         </p>
 
@@ -86,12 +104,15 @@ export function Dungeon({ activePath }: DungeonProps) {
           
           {/* Left Dungeon List Tabs */}
           <div className="lg:col-span-4 flex flex-col gap-3">
-            <h3 className="text-xs uppercase tracking-widest text-parchment-white/40 mb-2">Pilih Wilayah</h3>
+            <h3 className="text-xs uppercase tracking-widest text-parchment-white/40 mb-2" data-reveal>
+              Pilih Wilayah
+            </h3>
             {dungeonList.map((dun) => {
               const isSelected = dun.id === selectedId;
               return (
                 <button
                   key={dun.id}
+                  data-reveal
                   onClick={() => setSelectedId(dun.id)}
                   className={`w-full text-left p-4 rounded-xl border transition-all duration-300 ${
                     isSelected
@@ -112,7 +133,7 @@ export function Dungeon({ activePath }: DungeonProps) {
           </div>
 
           {/* Right Dungeon Details Showcase */}
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8" data-reveal>
             <div className={`h-full rounded-xl border border-ember-gold/20 bg-gradient-to-br ${activeDungeon.bg} p-6 md:p-8 flex flex-col justify-between`}>
               <div>
                 <div className="flex flex-wrap justify-between items-start gap-2 mb-4">
@@ -175,7 +196,7 @@ export function Dungeon({ activePath }: DungeonProps) {
 
         {/* CTA to Boss */}
         {copy.ctaLabel && (
-          <div className="flex justify-start">
+          <div className="flex justify-start" data-reveal>
             <Button
               variant="primary"
               className="text-base py-4 min-w-[200px]"

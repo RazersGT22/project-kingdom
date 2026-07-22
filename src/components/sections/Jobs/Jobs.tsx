@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { jobsCopy } from "@/data";
-import { useScrollReveal } from "@/hooks";
+import { useStaggerReveal, useParallax } from "@/hooks";
 import { SectionHeading, Card, Button } from "@/components/ui";
 import { scrollToSection } from "@/utils";
 import type { ArchetypeId } from "@/types";
@@ -46,19 +46,32 @@ const jobsList = [
 
 export function Jobs({ activePath }: JobsProps) {
   const ref = useRef<HTMLElement>(null);
-  useScrollReveal(ref);
+  const bgRef = useRef<HTMLDivElement>(null);
+  useStaggerReveal(ref);
+  useParallax(bgRef, 0.6);
   const copy = jobsCopy[activePath ?? "citizen"];
 
   return (
     <section
       id="jobs"
       ref={ref}
-      className="relative min-h-screen flex flex-col justify-center px-6 py-24"
+      className="relative min-h-screen flex flex-col justify-center px-6 py-24 overflow-hidden"
     >
       {/* Background gradients */}
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-b from-obsidian-night via-[#0b0c10] to-obsidian-night pointer-events-none"
+      />
+      {/* Layer parallax — glow + motif titik */}
+      <div
+        ref={bgRef}
+        aria-hidden="true"
+        className="absolute -inset-y-32 inset-x-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 25% 25%, rgba(201,162,39,0.10) 0%, transparent 45%), radial-gradient(circle at 75% 75%, rgba(201,162,39,0.08) 0%, transparent 40%), radial-gradient(rgba(244,237,224,0.12) 1px, transparent 1px)",
+          backgroundSize: "auto, auto, 44px 44px",
+        }}
       />
       <div
         aria-hidden="true"
@@ -72,13 +85,18 @@ export function Jobs({ activePath }: JobsProps) {
       />
 
       <div className="relative z-10 max-w-6xl mx-auto w-full">
-        <SectionHeading
-          eyebrow="Guild Pekerjaan"
-          title={copy.headline}
-          className="mb-6"
-        />
+        <div data-reveal>
+          <SectionHeading
+            eyebrow="Guild Pekerjaan"
+            title={copy.headline}
+            className="mb-6"
+          />
+        </div>
 
-        <p className="max-w-3xl text-base md:text-lg text-parchment-white/70 leading-relaxed mb-16">
+        <p
+          className="max-w-3xl text-base md:text-lg text-parchment-white/70 leading-relaxed mb-16"
+          data-reveal
+        >
           {copy.body}
         </p>
 
@@ -87,6 +105,7 @@ export function Jobs({ activePath }: JobsProps) {
           {jobsList.map((job) => (
             <Card
               key={job.title}
+              data-reveal
               className="flex flex-col justify-between border border-ember-gold/15 bg-obsidian-night/40 hover:border-ember-gold/40 transition-all duration-300 group"
             >
               <div>
@@ -125,9 +144,9 @@ export function Jobs({ activePath }: JobsProps) {
                     style={{ width: `${job.progress}%` }}
                   />
                 </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-parchment-white/40">Estimasi Upah</span>
-                  <span className="font-heading text-ember-gold">{job.reward}</span>
+                <div className="flex justify-between items-center gap-3 text-xs">
+                  <span className="flex-shrink-0 text-parchment-white/40">Estimasi Upah</span>
+                  <span className="min-w-0 truncate font-heading text-ember-gold">{job.reward}</span>
                 </div>
               </div>
             </Card>
@@ -136,7 +155,7 @@ export function Jobs({ activePath }: JobsProps) {
 
         {/* CTA to Dungeon */}
         {copy.ctaLabel && (
-          <div className="flex justify-start">
+          <div className="flex justify-start" data-reveal>
             <Button
               variant="primary"
               className="text-base py-4 min-w-[200px]"

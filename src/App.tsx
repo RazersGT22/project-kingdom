@@ -8,6 +8,7 @@ import {
   AmbientLayer,
   CursorTrailLayer,
   LoadingScreen,
+  GrainLayer,
 } from "@/components/layers";
 import {
   // Halaman Beranda (/)
@@ -105,6 +106,7 @@ function AppShell() {
   return (
     <>
       <LoadingScreen />
+      <GrainLayer />
       <CursorLayer />
       <CursorTrailLayer />
       <AmbientLayer />
@@ -114,7 +116,7 @@ function AppShell() {
         {renderPage()}
       </PageWrapper>
       <Footer />
-      <NavDots />
+      <NavDots currentRoute={currentRoute} />
     </>
   );
 }

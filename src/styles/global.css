@@ -110,6 +110,32 @@ body {
   50%       { transform: scaleY(1); }
 }
 
+/* Grain/noise texture global (RENCANA.md Tahap 2 poin 3) — noise-nya digeser
+   "loncat-loncat" (bukan mulus) tiap sepersekian detik, biar kerasa kayak
+   butiran film asli, bukan tekstur statis diam.
+   PENTING: geser pakai background-position dalam PIXEL KECIL (bukan transform
+   dalam PERSEN), karena persen itu dihitung dari ukuran ELEMENNYA (di sini
+   selebar layar penuh) — geser beberapa persen dari layar penuh = ratusan
+   pixel sekali loncat, jadinya kasar/berkedip parah, bukan getaran halus.
+   Ubin teksturnya sendiri cuma 140px, jadi geseran di bawah ini sengaja
+   dibikin kecil (maks 10px) biar cuma seperti "getar" halus. */
+@keyframes grain-shift {
+  0%, 100% { background-position: 0px 0px; }
+  10% { background-position: -8px -6px; }
+  20% { background-position: 6px 8px; }
+  30% { background-position: -6px 4px; }
+  40% { background-position: 8px -8px; }
+  50% { background-position: -4px -8px; }
+  60% { background-position: 8px 4px; }
+  70% { background-position: -8px 0px; }
+  80% { background-position: 4px 8px; }
+  90% { background-position: -6px -4px; }
+}
+
+.animate-grain-shift {
+  animation: grain-shift 1.4s steps(8) infinite;
+}
+
 /* Mobile menu fade-in */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(-8px); }
@@ -118,6 +144,22 @@ body {
 
 .animate-fade-in {
   animation: fade-in 0.2s ease-out forwards;
+}
+
+/* Staggered card entrance — dipicu MURNI lewat CSS saat elemen dipasang ke DOM
+   (mount), bukan lewat GSAP querySelectorAll sekali di awal seperti data-reveal.
+   Ini yang bikin animasi ini AMAN dipakai di grid yang isinya berubah-ubah
+   (misal galeri yang difilter/dipaginasi) — animasi otomatis "nyala ulang"
+   tiap kali React memasang elemen baru ke DOM, nggak peduli itu mount pertama
+   kali atau hasil ganti filter/halaman. Delay per-kartu diatur lewat inline
+   style animationDelay di komponennya. */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-card-in {
+  animation: card-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* Pastikan pop-up login Netlify Identity selalu tampil paling atas,

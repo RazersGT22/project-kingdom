@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useRef, useState, useMemo } from "react";
 import { SectionHeading } from "@/components/ui";
+import { useStaggerReveal } from "@/hooks";
 
 const FAQ_CATEGORIES = ["Semua", "Koneksi & Teknis", "Aturan & Gameplay", "Klan & Donasi"] as const;
 type FaqCategory = (typeof FAQ_CATEGORIES)[number];
@@ -77,6 +78,8 @@ const FAQ_DATA: FaqItem[] = [
 ];
 
 export function Faq() {
+  const ref = useRef<HTMLElement>(null);
+  useStaggerReveal(ref);
   const [activeCategory, setActiveCategory] = useState<FaqCategory>("Semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -95,6 +98,7 @@ export function Faq() {
   return (
     <section
       id="faq"
+      ref={ref}
       className="relative min-h-screen flex flex-col justify-center px-6 py-24"
     >
       {/* Background */}
@@ -106,33 +110,35 @@ export function Faq() {
 
       {/* Hero banner */}
       <div className="relative z-10 max-w-4xl mx-auto w-full">
-        <SectionHeading
-          eyebrow="Pusat Bantuan"
-          title="Arsip Pengetahuan Kerajaan"
-          className="mb-4 flex flex-col items-center text-center"
-        />
-        <p className="text-center text-parchment-white/60 text-base mb-12 max-w-xl mx-auto">
-          Temukan jawaban atas pertanyaan umum seputar koneksi, aturan bermain, sistem klan, dan donasi di sini.
-        </p>
-
-        {/* Search bar */}
-        <div className="relative mb-8 max-w-xl mx-auto">
-          <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <svg className="w-4 h-4 text-ember-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-            </svg>
-          </div>
-          <input
-            type="search"
-            placeholder="Cari pertanyaan, misal: 'cara join', 'PvP', 'klan'…"
-            value={searchQuery}
-            onChange={(e) => { setSearchQuery(e.target.value); setOpenIndex(null); }}
-            className="w-full bg-[#14131a]/80 border border-parchment-white/10 focus:border-ember-gold/50 focus:outline-none rounded-xl pl-11 pr-5 py-3.5 text-sm text-parchment-white placeholder:text-parchment-white/30 transition-colors"
+        <div data-reveal>
+          <SectionHeading
+            eyebrow="Pusat Bantuan"
+            title="Arsip Pengetahuan Kerajaan"
+            className="mb-4 flex flex-col items-center text-center"
           />
+          <p className="text-center text-parchment-white/60 text-base mb-12 max-w-xl mx-auto">
+            Temukan jawaban atas pertanyaan umum seputar koneksi, aturan bermain, sistem klan, dan donasi di sini.
+          </p>
+
+          {/* Search bar */}
+          <div className="relative mb-8 max-w-xl mx-auto">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+              <svg className="w-4 h-4 text-ember-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+              </svg>
+            </div>
+            <input
+              type="search"
+              placeholder="Cari pertanyaan, misal: 'cara join', 'PvP', 'klan'…"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setOpenIndex(null); }}
+              className="w-full bg-[#14131a]/80 border border-parchment-white/10 focus:border-ember-gold/50 focus:outline-none rounded-xl pl-11 pr-5 py-3.5 text-sm text-parchment-white placeholder:text-parchment-white/30 transition-colors"
+            />
+          </div>
         </div>
 
         {/* Category tabs */}
-        <div className="flex flex-wrap justify-center gap-2 mb-10" role="tablist">
+        <div className="flex flex-wrap justify-center gap-2 mb-10" role="tablist" data-reveal>
           {FAQ_CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -151,7 +157,7 @@ export function Faq() {
         </div>
 
         {/* FAQ accordion */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3" data-reveal>
           {filteredFaqs.length === 0 ? (
             <div className="text-center py-16 text-parchment-white/40">
               <span className="text-4xl block mb-4">📜</span>
@@ -191,7 +197,7 @@ export function Faq() {
         </div>
 
         {/* Still need help? */}
-        <div className="mt-14 border border-ember-gold/20 bg-ember-gold/5 rounded-2xl p-6 md:p-8 text-center">
+        <div className="mt-14 border border-ember-gold/20 bg-ember-gold/5 rounded-2xl p-6 md:p-8 text-center" data-reveal>
           <h3 className="font-heading text-lg text-ember-gold mb-2">Masih Butuh Bantuan?</h3>
           <p className="text-sm text-parchment-white/60 mb-6">
             Bergabunglah ke Discord kami dan ajukan pertanyaan langsung kepada tim admin RZ Survival.

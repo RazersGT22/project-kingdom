@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { castleCopy } from "@/data";
-import { useScrollReveal } from "@/hooks";
+import { useParallax, useStaggerReveal } from "@/hooks";
 import { SectionHeading, Button } from "@/components/ui";
 import { scrollToSection } from "@/utils";
 import type { ArchetypeId } from "@/types";
@@ -32,19 +32,33 @@ const castleFeatures = [
 // Fallback ke "citizen" saat belum ada archetype terpilih.
 export function Castle({ activePath }: CastleProps) {
   const ref = useRef<HTMLElement>(null);
-  useScrollReveal(ref);
+  const bgRef = useRef<HTMLDivElement>(null);
+  useStaggerReveal(ref);
+  useParallax(bgRef, 0.6);
   const copy = castleCopy[activePath ?? "citizen"];
 
   return (
     <section
       id="castle"
       ref={ref}
-      className="relative min-h-screen flex flex-col justify-center px-6 py-24"
+      className="relative min-h-screen flex flex-col justify-center px-6 py-24 overflow-hidden"
     >
-      {/* Subtle background texture */}
+      {/* Base gradient — statis, bukan bagian dari parallax */}
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-br from-[#0f0d0a] via-obsidian-night to-[#080810] pointer-events-none"
+      />
+
+      {/* Layer parallax — glow + motif titik, diperbesar (-inset-y-32) agar tidak ada celah saat bergerak */}
+      <div
+        ref={bgRef}
+        aria-hidden="true"
+        className="absolute -inset-y-32 inset-x-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 20% 30%, rgba(201,162,39,0.10) 0%, transparent 45%), radial-gradient(circle at 80% 70%, rgba(201,162,39,0.08) 0%, transparent 40%), radial-gradient(rgba(244,237,224,0.12) 1px, transparent 1px)",
+          backgroundSize: "auto, auto, 44px 44px",
+        }}
       />
 
       {/* Section top border */}
@@ -55,16 +69,18 @@ export function Castle({ activePath }: CastleProps) {
 
       <div className="relative z-10 max-w-6xl mx-auto w-full">
         {/* Eyebrow */}
-        <SectionHeading
-          eyebrow="The Castle"
-          title={copy.headline}
-          className="mb-12"
-        />
+        <div data-reveal>
+          <SectionHeading
+            eyebrow="The Castle"
+            title={copy.headline}
+            className="mb-12"
+          />
+        </div>
 
         {/* 2-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left column — image placeholder */}
-          <div className="order-2 lg:order-1">
+          <div className="order-2 lg:order-1" data-reveal>
             <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden border border-ember-gold/15">
               {/* Placeholder image area with gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#1a1408] via-[#120e08] to-[#0a0812] flex flex-col items-center justify-center gap-4">
@@ -84,14 +100,17 @@ export function Castle({ activePath }: CastleProps) {
           {/* Right column — content */}
           <div className="order-1 lg:order-2 flex flex-col gap-8">
             {/* Body copy */}
-            <p className="text-base md:text-lg text-parchment-white/70 leading-relaxed">
+            <p
+              className="text-base md:text-lg text-parchment-white/70 leading-relaxed"
+              data-reveal
+            >
               {copy.body}
             </p>
 
             {/* Feature list */}
             <ul className="flex flex-col gap-5" aria-label="Fitur kastil">
               {castleFeatures.map((feat) => (
-                <li key={feat.title} className="flex items-start gap-4">
+                <li key={feat.title} className="flex items-start gap-4" data-reveal>
                   <span
                     aria-hidden="true"
                     className="flex-shrink-0 flex h-10 w-10 items-center justify-center rounded-lg border border-ember-gold/25 bg-ember-gold/5 text-xl"
@@ -112,7 +131,7 @@ export function Castle({ activePath }: CastleProps) {
 
             {/* CTA */}
             {copy.ctaLabel && (
-              <div className="pt-2">
+              <div className="pt-2" data-reveal>
                 <Button
                   variant="secondary"
                   className="text-base py-4"

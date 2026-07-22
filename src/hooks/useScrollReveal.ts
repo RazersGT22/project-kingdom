@@ -3,7 +3,7 @@ import { gsap, ScrollTrigger } from "@/lib";
 
 // Implementation Guide Bagian 7 — pola reveal-on-scroll per section.
 // Animasi terbatas pada transform & opacity (GPU-friendly), sesuai Tech Bible Bab 5.
-// Detail easing/durasi final masih TODO — menunggu Experience Design Bible.
+// Reveal "berat" ala cinematic: scale-up + rise + fade, easing power4 (lebih dramatis dari power2).
 export function useScrollReveal<T extends HTMLElement>(ref: RefObject<T>) {
   useEffect(() => {
     const el = ref.current;
@@ -12,12 +12,13 @@ export function useScrollReveal<T extends HTMLElement>(ref: RefObject<T>) {
     const ctx = gsap.context(() => {
       gsap.fromTo(
         el,
-        { opacity: 0, y: 40 },
+        { opacity: 0, y: 100, scale: 0.85 },
         {
           opacity: 1,
           y: 0,
-          duration: 0.8,
-          ease: "power2.out",
+          scale: 1,
+          duration: 1.4,
+          ease: "power4.out",
           scrollTrigger: {
             trigger: el,
             start: "top 80%",

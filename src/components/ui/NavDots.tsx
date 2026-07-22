@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { SECTION_IDS, type SectionId } from "@/constants";
 import { scrollToSection } from "@/utils";
-import { useHashRouter } from "@/hooks";
+import type { AppRoute } from "@/hooks";
 
 // Label display untuk tiap section ID
 const SECTION_LABELS: Record<string, string> = {
@@ -20,47 +19,65 @@ const SECTION_LABELS: Record<string, string> = {
   faq: "Pertanyaan",
 };
 
-export function NavDots() {
-  const { currentRoute } = useHashRouter();
+const KNOWN_SECTION_IDS = new Set(Object.keys(SECTION_LABELS));
+
+type NavDotsProps = {
+  currentRoute: AppRoute;
+};
+
+export function NavDots({ currentRoute }: NavDotsProps) {
   const [activeId, setActiveId] = useState<string>("");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [presentIds, setPresentIds] = useState<string[]>([]);
 
   useEffect(() => {
-    // Cari section apa saja yang ada di halaman saat ini
-    const present: string[] = [];
-    const allPossibleIds = [...SECTION_IDS, "faq"];
-
-    allPossibleIds.forEach((id) => {
-      if (document.getElementById(id)) {
-        present.push(id);
-      }
-    });
+    // Cari section apa saja yang ADA di halaman saat ini, dalam URUTAN ASLI
+    // kemunculannya di DOM (bukan urutan tetap dari daftar konstanta) — supaya
+    // kalau suatu halaman merender section dengan urutan yang beda (mis. Village
+    // sebelum Castle di halaman Wilayah), titik navigasinya ikut nyesuaiin.
+    const sectionEls = Array.from(document.querySelectorAll<HTMLElement>("section[id]"));
+    const present = sectionEls.map((el) => el.id).filter((id) => KNOWN_SECTION_IDS.has(id));
 
     setPresentIds(present);
     if (present.length > 0) {
       setActiveId(present[0]);
     }
 
-    const observers: IntersectionObserver[] = [];
+    if (present.length === 0) return;
 
-    present.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
+    // Tentukan section aktif berdasarkan posisi scroll aktual — dicek ulang tiap
+    // event scroll, bukan cuma sekali di awal. Section "aktif" = section yang
+    // batas atasnya paling dekat (dan sudah terlewati) dari garis referensi di
+    // ~35% tinggi layar dari atas.
+    function updateActiveByScroll() {
+      const referenceY = window.innerHeight * 0.35;
+      let closestId = present[0];
+      let closestDist = Infinity;
 
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setActiveId(id);
+      present.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const top = el.getBoundingClientRect().top;
+        if (top <= referenceY) {
+          const dist = referenceY - top;
+          if (dist < closestDist) {
+            closestDist = dist;
+            closestId = id;
           }
-        },
-        { threshold: 0.3, rootMargin: "-20% 0px -20% 0px" },
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
+        }
+      });
 
-    return () => observers.forEach((o) => o.disconnect());
+      setActiveId(closestId);
+    }
+
+    updateActiveByScroll();
+    window.addEventListener("scroll", updateActiveByScroll, { passive: true });
+    window.addEventListener("resize", updateActiveByScroll);
+
+    return () => {
+      window.removeEventListener("scroll", updateActiveByScroll);
+      window.removeEventListener("resize", updateActiveByScroll);
+    };
   }, [currentRoute]); // Run ulang setiap pindah halaman/route
 
   // Jika halaman hanya punya 1 section (seperti galeri), tidak usah tampilkan navigasi dots

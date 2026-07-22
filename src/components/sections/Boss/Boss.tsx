@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { bossCopy } from "@/data";
-import { useScrollReveal } from "@/hooks";
+import { useStaggerReveal, useParallax } from "@/hooks";
 import { SectionHeading, Card, Button } from "@/components/ui";
 import { scrollToSection } from "@/utils";
 import type { ArchetypeId } from "@/types";
@@ -35,19 +35,32 @@ const dropItems = [
 
 export function Boss({ activePath }: BossProps) {
   const ref = useRef<HTMLElement>(null);
-  useScrollReveal(ref);
+  const bgRef = useRef<HTMLDivElement>(null);
+  useStaggerReveal(ref);
+  useParallax(bgRef, 0.6);
   const copy = bossCopy[activePath ?? "citizen"];
 
   return (
     <section
       id="boss"
       ref={ref}
-      className="relative min-h-screen flex flex-col justify-center px-6 py-24"
+      className="relative min-h-screen flex flex-col justify-center px-6 py-24 overflow-hidden"
     >
       {/* Dark reddish magma style background gradient */}
       <div
         aria-hidden="true"
         className="absolute inset-0 bg-gradient-to-b from-obsidian-night via-[#150a0a] to-[#0c0505] pointer-events-none"
+      />
+      {/* Layer parallax — glow merah magma + motif titik, sesuai tema Boss */}
+      <div
+        ref={bgRef}
+        aria-hidden="true"
+        className="absolute -inset-y-32 inset-x-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 25% 25%, rgba(153,27,27,0.14) 0%, transparent 45%), radial-gradient(circle at 75% 75%, rgba(153,27,27,0.10) 0%, transparent 40%), radial-gradient(rgba(244,237,224,0.10) 1px, transparent 1px)",
+          backgroundSize: "auto, auto, 44px 44px",
+        }}
       />
       <div
         aria-hidden="true"
@@ -63,19 +76,24 @@ export function Boss({ activePath }: BossProps) {
       />
 
       <div className="relative z-10 max-w-6xl mx-auto w-full">
-        <SectionHeading
-          eyebrow="Raid Boss Event"
-          title={copy.headline}
-          className="mb-6"
-        />
+        <div data-reveal>
+          <SectionHeading
+            eyebrow="Raid Boss Event"
+            title={copy.headline}
+            className="mb-6"
+          />
+        </div>
 
-        <p className="max-w-3xl text-base md:text-lg text-parchment-white/70 leading-relaxed mb-12">
+        <p
+          className="max-w-3xl text-base md:text-lg text-parchment-white/70 leading-relaxed mb-12"
+          data-reveal
+        >
           {copy.body}
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-16">
           {/* Boss Lore Card */}
-          <div className="relative">
+          <div className="relative" data-reveal>
             {/* Pulsing red volcanic aura glow */}
             <div className="absolute inset-0 bg-red-500/15 rounded-2xl blur-3xl animate-magma-pulse pointer-events-none" />
             
@@ -103,11 +121,14 @@ export function Boss({ activePath }: BossProps) {
 
           {/* Reward & Loot Showcase */}
           <div>
-            <h4 className="font-heading text-xl text-ember-gold mb-6">Jaminan Drop Item Legendaris</h4>
+            <h4 className="font-heading text-xl text-ember-gold mb-6" data-reveal>
+              Jaminan Drop Item Legendaris
+            </h4>
             <div className="flex flex-col gap-4">
               {dropItems.map((item) => (
                 <div
                   key={item.name}
+                  data-reveal
                   className={`flex items-center justify-between p-4 rounded-xl border ${item.glow} backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover-shimmer`}
                 >
                   <div className="flex items-center gap-3">
@@ -129,7 +150,7 @@ export function Boss({ activePath }: BossProps) {
 
         {/* CTA to Gallery */}
         {copy.ctaLabel && (
-          <div className="flex justify-start">
+          <div className="flex justify-start" data-reveal>
             <Button
               variant="primary"
               className="text-base py-4 min-w-[200px] hover-shimmer"
