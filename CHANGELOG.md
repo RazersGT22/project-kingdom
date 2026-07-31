@@ -11,6 +11,153 @@
 
 ---
 
+## v32 — 25/07/2026 — Lebar konten dilebarin (buat monitor lebar) + Gallery tambah tingkat 4 & 5 kolom
+
+Request langsung dari user (di luar Tahap 3), yang pakai monitor 27" 1920×1080 — ngerasa website kebanyakan spasi kosong kiri-kanan.
+
+### Lebar konten
+- Hampir semua section (10 file: Boss, Castle, Dungeon, Economy, Gallery, Jobs, Marketplace, PathSelect, Trailer, Village) pakai wrapper lebar maksimal yang SAMA PERSIS: `max-w-6xl` (1152px)
+- Dinaikkan jadi `max-w-[1400px]` (+~22% lebih lebar) di kesepuluh file itu, plus `Footer.tsx` (2 tempat) biar konten footer tetap sejajar sama section di atasnya
+- **Sengaja TIDAK diubah:** section Faq, JoinServer, Opening — ini pakai wrapper yang emang didesain lebih sempit (max-w-4xl/5xl) buat konten yang berpusat di tengah (hero text, list FAQ), bukan grid lebar — lebih sempit itu pilihan desain yang disengaja, bukan "kelupaan"
+- Navbar nggak disentuh — sudah full-width dari awal (`left-0 right-0`), nggak pakai constraint max-width
+
+### Gallery — tingkat kolom baru
+- Sebelumnya cuma 3 tingkat: mobile (1 kolom/10 foto), tablet (2 kolom/20 foto), desktop (3 kolom/30 foto)
+- Ditambah 2 tingkat baru: **xl breakpoint (≥1280px) → 4 kolom, 40 foto/halaman** dan **2xl breakpoint (≥1536px) → 5 kolom, 50 foto/halaman**
+- Monitor 27" 1920×1080 milik user masuk kategori **2xl (≥1536px)** → otomatis dapet **5 kolom, 50 foto/halaman**
+- File yang diubah: `getColumnsForWidth()` (tambah 2 kondisi breakpoint baru) dan className grid (`xl:grid-cols-4 2xl:grid-cols-5` ditambah) — dua-duanya WAJIB tetap sinkron manual (satu ngatur breakpoint logic buat itungan jumlah foto, satu ngatur breakpoint CSS beneran buat tampilan grid)
+- File yang diubah: `src/components/sections/Gallery/Gallery.tsx`, `src/components/sections/{Boss,Castle,Dungeon,Economy,Jobs,Marketplace,PathSelect,Trailer,Village}/*.tsx`, `src/components/layout/Footer.tsx`
+- Sudah dites: `tsc --noEmit` bersih, `npm run build` sukses
+- **PENTING buat testing manual:** buka di monitor lebar (1920px+), cek konten section keliatan lebih lebar (nggak sekempit sebelumnya), dan cek Gallery — harusnya sekarang 5 foto per baris, 50 foto per halaman (dengan 13 foto yang ada sekarang cuma 1 halaman doang, belum kelihatan bedanya sampai foto ditambah lebih dari 50)
+
+---
+
+## v31 — 25/07/2026 — Review konten: fix bug bold, samain istilah Gold Coin, hapus FAQ dobel (Tahap 3, poin Review Konten — sebagian)
+
+Hasil baca ulang semua file teks/copy di seluruh project. Ditemukan 4 masalah,
+3 di antaranya di-fix di langkah ini (yang ke-4, deskripsi arketipe, **masih
+ditunda** — user belum siap konfirmasi, ditandain `[ASUMSI]` tetap dibiarkan
+di kode sampai user siap)
+
+### Fix 1: Bug markdown bold di Economy (dicatat sejak v8, akhirnya di-fix)
+- **Sebelum:** `**Gold Coins (GC)**` — ditulis pakai sintaks markdown tapi dirender sebagai teks JSX polos, jadi tanda bintangnya muncul literal di layar, bukan bold
+- **Sesudah:** diganti `<strong className="text-parchment-white font-semibold">Gold Coin (GC)</strong>` — beneran bold di HTML
+
+### Fix 2: Istilah mata uang disamain jadi "Gold Coin (GC)" (singular)
+- Sebelumnya ada 2 variasi tertulis: "Gold Coins (GC)" (Marketplace, Economy — pakai "Coins") vs "Gold Coin (GC)" (FAQ — pakai "Coin" tanpa s)
+- Disamain semua jadi **"Gold Coin (GC)"** (singular) — dipilih karena FAQ udah lebih dulu "mendefinisikan" istilah resmi ini ("Apa itu Gold Coin (GC) dan bagaimana cara mendapatkannya?")
+- File yang diubah: `Economy.tsx`, `Marketplace.tsx`
+
+### Fix 3: Mini-FAQ dobel di halaman Bantuan dihapus
+- Section `JoinServer` (halaman Bantuan) punya accordion 3 pertanyaan sendiri ("Apakah berbayar?", "cara join Bedrock?", "versi Minecraft?") — PERSIS topik yang sama kayak yang udah dibahas lebih lengkap di section `Faq` yang ada TEPAT DI BAWAHNYA (masih halaman yang sama!). Bahkan detailnya beda (mini-FAQ nggak nyebut port fallback 25565 yang ada di FAQ lengkap) — berpotensi bikin bingung kalau user baca 2 jawaban beda buat pertanyaan yang sama
+- Diganti jadi 1 kalimat pendek + tombol "Lihat Semua Pertanyaan (FAQ) ↓" yang scroll ke section Faq di bawahnya (`scrollToSection("#faq")`)
+- Kode yang udah nggak kepake dibersihin: `faqList` const, `openFaqIndex` state, `toggleFaq` function
+- File yang diubah: `JoinServer.tsx`
+
+### Yang BELUM di-fix (ditunda, nunggu keputusan user)
+- **Deskripsi 4 arketipe** (`archetypes.ts`) — ditandai `[ASUMSI]` sejak awal project (belum dikonfirmasi pemilik server), user diminta review tapi jawab "belum siap, masih lama" — dibiarkan apa adanya, komentar `[ASUMSI]` di kode TETAP ada sebagai pengingat buat sesi berikutnya
+- Istilah "koin emas"/"Emas" di beberapa file data flavor text (`economyCopy.ts`, `dungeonCopy.ts`) TIDAK diseragamkan ke "Gold Coin (GC)" — ini flavor text naratif berbahasa Indonesia, bukan referensi UI teknis, jadi dibiarkan pakai istilah bahasa Indonesia yang natural
+
+Sudah dites: `tsc --noEmit` bersih, `npm run build` sukses.
+
+**PENTING buat testing manual:** cek section Economy (paragraf "Sistem Keuangan Kerajaan" harus bold beneran di kata "Gold Coin (GC)"), cek Marketplace (istilah GC konsisten), dan cek halaman Bantuan — mini-FAQ sebelumnya harusnya udah ilang, gantiin sama tombol "Lihat Semua Pertanyaan (FAQ)" yang kalau diklik scroll ke bawah ke FAQ lengkap.
+
+---
+
+## v30 — 24/07/2026 — Aksesibilitas: hormatin "Kurangi Gerakan" / prefers-reduced-motion (Tahap 3, poin Aksesibilitas)
+
+- Beberapa efek gerak yang ditambah di Tahap 2 (grain, hover tilt, magnetic cursor, reveal berlapis) sebelumnya SAMA SEKALI nggak peduli sama setting aksesibilitas OS/browser user ("Kurangi Gerakan" / `prefers-reduced-motion`) — semua user dapet animasi penuh, termasuk yang emang sensitif/gampang pusing liat animasi dan udah sengaja aktifin setting itu di perangkatnya
+- **Bukan tombol manual di website** — ini otomatis mendeteksi setting yang SUDAH ADA di OS/browser user, nggak ada UI baru yang ditambah. Cuma memengaruhi user yang emang udah mengaktifkan setting itu sendiri (defaultnya mati buat hampir semua orang), user lain nggak ngerasain bedanya sama sekali
+- **2 lapis penanganan**, tergantung jenis animasinya:
+  1. **Animasi CSS murni** (grain-shift, card-in, fade-in, hover:scale via Tailwind, dst) — ditangani SEKALIGUS lewat 1 aturan CSS global baru di `global.css`: `@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; ... } }`. Ini "kill switch" yang otomatis nangkep SEMUA animasi/transisi berbasis CSS di seluruh situs tanpa perlu diubah 1-1 per komponen
+  2. **Animasi berbasis JavaScript** (GSAP di `useStaggerReveal`, tilt 3D mouse-tracking di `TiltWrapper`, magnetic cursor di `Button`) — TIDAK kena aturan CSS di atas (karena dikontrol lewat `gsap.fromTo`/React state, bukan CSS `animation`/`transition` biasa), jadi masing-masing dicek manual pakai utility baru `prefersReducedMotion()` (`src/utils/prefersReducedMotion.ts`, based on `window.matchMedia("(prefers-reduced-motion: reduce)")`)
+- **`useStaggerReveal.ts`**: kalau reduced-motion aktif, skip animasi `gsap.fromTo` (geser+scale), langsung `gsap.set(targets, { opacity: 1, y: 0, scale: 1 })` — konten tetap fully visible, cuma tanpa gerakan masuknya
+- **`TiltWrapper.tsx`**: kalau reduced-motion aktif, `handleMouseMove` skip perhitungan rotasi (kartu nggak pernah miring, tetap flat)
+- **`Button.tsx`**: kalau reduced-motion aktif, `handleMouseMove` skip perhitungan magnetic offset (tombol nggak pernah ketarik ke kursor)
+- **`GrainLayer.tsx`**: TIDAK perlu diubah — animasinya (`animate-grain-shift`) murni CSS, otomatis ke-cover sama aturan global di atas
+- File baru: `src/utils/prefersReducedMotion.ts`. File yang diubah: `src/styles/global.css`, `src/hooks/useStaggerReveal.ts`, `src/components/ui/TiltWrapper.tsx`, `src/components/ui/Button.tsx`, `src/utils/index.ts`
+- Sudah dites: `tsc --noEmit` bersih, `npm run build` sukses
+- **PENTING buat testing manual:** aktifin dulu setting "Kurangi Gerakan"/"Reduce Motion" di OS (Windows: Settings → Aksesibilitas → Efek Visual; Chrome DevTools juga bisa: `F12` → `Ctrl+Shift+P` → ketik "Render" → "Show Rendering" → emulasi "prefers-reduced-motion: reduce"), refresh halaman, cek grain berhenti bergetar, kartu Village/Marketplace/Gallery nggak miring pas di-hover, tombol nggak ketarik ke kursor, dan section langsung muncul semua pas discroll (tanpa animasi geser masuk). Matikan lagi settingnya, refresh, pastikan semua animasi balik normal seperti biasa
+
+---
+
+## v29 — 23/07/2026 — Halaman 404 "Jalan Ini Berakhir di Kabut" (Tahap 3, poin Halaman 404)
+
+- **Sebelum:** kalau user buka URL/hash yang nggak dikenal (misal salah ketik), `getRouteFromHash()` di `useHashRouter.ts` diam-diam balikin ke Beranda — user nggak pernah tau link-nya salah
+- **Sesudah:** hash yang nggak cocok sama route manapun sekarang dikembalikan sebagai route baru `"/404"` (ditambah ke union type `AppRoute`), dan `App.tsx` nge-render komponen baru `PageNotFound` buat kasus itu
+- Halaman 404 bertema medieval sesuai request user: judul **"Jalan Ini Berakhir di Kabut"**, ada angka 404 besar transparan di background, pesan singkat, dan tombol "← Kembali ke Beranda"
+- **Sengaja TIDAK di-lazy-load** kayak halaman lain (`PageHome`, `PageWorld`, dst di v25) — komponen ini kecil, dan halaman error harus tampil INSTAN tanpa jeda "Memuat..." (jeda loading malah bikin bingung pas skenario "ada yang salah")
+- Judul tab browser juga ditambah buat kasus ini: "Halaman Tidak Ditemukan — Project Kingdom" (`useDocumentTitle.ts`)
+- File baru: `src/pages/PageNotFound.tsx`. File yang diubah: `src/hooks/useHashRouter.ts` (tambah tipe route `/404` + deteksi hash nggak dikenal), `src/App.tsx` (case baru di switch), `src/hooks/useDocumentTitle.ts`
+- Sudah dites: `tsc --noEmit` bersih, `npm run build` sukses
+- **PENTING buat testing manual:** buka browser, ketik manual di address bar sesuatu kayak `webs.rzs.my.id/#/halaman-ngasal` (ganti bagian setelah `#/` sama teks acak apapun) — harusnya muncul halaman "Jalan Ini Berakhir di Kabut", BUKAN Beranda atau halaman kosong. Coba juga klik tombol "Kembali ke Beranda"-nya, pastikan beneran balik ke `/`
+
+---
+
+## v28 — 23/07/2026 — SEO: meta tags, Open Graph, judul tab dinamis (Tahap 3, poin SEO)
+
+- **Meta description** ditambah di `index.html` — deskripsi singkat server buat mesin pencari
+- **Open Graph tags** (`og:title`, `og:description`, `og:image`, dst) + **Twitter Card** ditambah — buat preview rapi pas link di-share ke WhatsApp/Discord/dll. Gambar preview pakai foto "Bridge of Triumph" (dipilih user), di-crop & resize ke ukuran standar 1200×630px (`public/assets/images/og-preview.jpg`)
+- **Keterbatasan penting yang perlu dipahami:** karena web ini SPA (Single Page Application, semua halaman di-render lewat JavaScript di 1 file HTML), Open Graph tags **CUMA BISA 1 versi buat SELURUH website** — nggak bisa beda-beda per halaman (misal preview khusus buat Galeri beda dari Bantuan), soalnya aplikasi kayak WhatsApp/Discord baca HTML mentah doang, nggak jalanin JavaScript kita buat tau lagi di halaman/section mana. Ini batasan wajar SPA client-side, bukan bug — kalau mau preview beda per halaman butuh setup server-side rendering yang jauh lebih kompleks (di luar scope)
+- **Judul tab browser** SEKARANG beda per halaman (`document.title`) — ini BEDA dari Open Graph di atas, karena cuma diliat pas browsing langsung (bukan pas link di-share): "Project Kingdom — RZ Survival" (Beranda), "Wilayah — Project Kingdom", "Ekonomi — Project Kingdom", "Gameplay — Project Kingdom", "Galeri — Project Kingdom", "Bantuan — Project Kingdom". Hook baru `useDocumentTitle.ts` (`src/hooks/`)
+- Domain yang dipakai di `og:url`/`og:image`: `https://webs.rzs.my.id` (dikonfirmasi user)
+- File baru: `src/hooks/useDocumentTitle.ts`, `public/assets/images/og-preview.jpg`. File yang diubah: `index.html` (meta tags), `src/hooks/index.ts` (export), `src/App.tsx` (pasang hook)
+- Sudah dites: `tsc --noEmit` bersih, `npm run build` sukses
+- **PENTING buat testing manual:** buka DevTools (`F12`) → Elements/Inspect → cek `<head>` beneran ada tag `og:*`/`twitter:*`. Buat cek preview share beneran muncul bagus, bisa pakai tool online kayak [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/) atau [metatags.io](https://metatags.io) (masukin URL `https://webs.rzs.my.id` setelah web-nya live). Buat judul tab, tinggal klik pindah-pindah halaman dari navbar, lihat judul di tab browser ikut berubah
+
+---
+
+## v27 — 23/07/2026 — Logo navbar & favicon baru
+
+- User upload 2 logo hasil generate AI (background hitam solid), diminta background-nya dihapus jadi transparan lalu dipasang
+- **Proses hapus background:** dilakukan manual pakai Python (Pillow) — deteksi piksel yang hampir hitam murni (`R+G+B < 30`) terus dijadiin transparan (`alpha = 0`). Dicek ulang hasilnya dengan nge-composite di atas background biru buat mastiin transparansinya beneran bersih (bukan cuma keliatan putih doang pas dilihat langsung)
+- Kedua logo di-crop juga (`getbbox()` + padding tipis 8-10px) biar nggak ada spasi transparan kosong berlebih di pinggirnya
+- **Logo navbar** (mahkota + siluet kastil) → dipasang di pojok kiri atas, gantiin emoji `⚜️` yang lama. File: `public/assets/images/logo-navbar.png`
+- **Favicon** (mahkota bercahaya/glow) → dipasang buat ikon tab browser, gantiin `favicon.svg` yang lama. File: `public/assets/images/favicon.png`
+- File yang diubah: `index.html` (link favicon), `src/components/layout/Navbar.tsx` (ganti emoji jadi `<img>`)
+- Sudah dites: `tsc --noEmit` bersih, `npm run build` sukses, dicek `dist/` beneran bawa kedua file gambar baru + link favicon di HTML udah bener
+- **PENTING buat testing manual:** cek tab browser (favicon baru harus muncul di situ, mungkin perlu hard refresh `Ctrl+Shift+R` karena favicon sering ke-cache), sama cek pojok kiri atas navbar di semua halaman (logo harus muncul rapi di sebelah teks "Project Kingdom", bukan kegedean/kekecilan/ketarik aneh)
+
+---
+
+## v26 — 22/07/2026 — Lazy-load gambar galeri (Tahap 3, poin Performa — langkah 3, TERAKHIR) — dikonfirmasi sudah benar, tanpa perubahan kode
+
+- Dicek 2 `<img>` di `Gallery.tsx`:
+  1. Foto thumbnail di grid — **sudah** pakai `loading="lazy"` dari awal (kemungkinan sudah diterapkan di sesi sebelum percakapan ini)
+  2. Foto full-size di lightbox (popup detail) — **sengaja TIDAK** pakai lazy, dan ini SUDAH BENAR: gambar itu cuma dirender ke DOM pas user beneran klik buka lightbox-nya, jadi otomatis langsung tampil di layar — lazy-load di sini nggak ada gunanya (`loading="lazy"` cuma bermanfaat buat gambar yang emang di luar layar/belum kelihatan)
+- **Tidak ada file yang diubah** — cuma verifikasi & update checklist
+- **Poin "Performa" di Tahap 3 SELESAI SEMUA** (3/3 langkah: preload musik v24, code-splitting v25, lazy-load gambar v26)
+- Checklist `RENCANA.md` Tahap 3: 1 dari 5 poin besar selesai (Performa), sisa 4: Aksesibilitas, SEO, Halaman 404, Review konten
+
+---
+
+## v25 — 22/07/2026 — Code-splitting per halaman (Tahap 3, poin Performa — langkah 2)
+
+- Sebelumnya `App.tsx` impor SEMUA section dari SEMUA halaman secara langsung (statis) — jadi Vite build-nya jadi 1 file JS raksasa (578KB / gzip 188KB) yang didownload PENUH oleh siapapun, walau cuma buka 1 halaman doang (misal Galeri)
+- **Fix:** bikin folder baru `src/pages/` — tiap "halaman" (Beranda, Wilayah, Ekonomi, Gameplay, Galeri, Bantuan) sekarang jadi file terpisah (`PageHome.tsx`, `PageWorld.tsx`, dst), masing-masing impor section-nya LANGSUNG dari file section (bukan lewat barrel `@/components/sections` bersama) biar Vite/Rollup bisa misahin chunk-nya dengan bersih
+- `App.tsx` sekarang pakai `React.lazy()` buat tiap halaman + dibungkus `<Suspense fallback={<PageLoadingFallback />}>` — chunk halaman baru BARU didownload pas rute-nya beneran dibuka, sambil nampilin fallback ringan ("Memuat...") kalau chunk-nya belum selesai kedownload
+- **Hasil ukuran file JS utama turun dari 578KB → 304KB** (gzip 188KB → 105KB), sisanya kepecah jadi 12 chunk kecil per halaman/komponen (`PageHome` 9.8KB, `PageWorld` 4.1KB, `PageEconomy` 18KB, `PageGameplay` 17KB, `PageFaq` 14KB — semua jauh lebih ringan dari sebelumnya)
+- **Pengecualian:** chunk `PageGallery` masih relatif besar (204KB) — ini WAJAR, bukan bug, karena fitur komentar galeri (`GalleryComments.tsx`) pakai library pihak ketiga `netlify-identity-widget` yang lumayan berat buat sistem login komentar. Sebelumnya library ini ikut ke-download semua orang di semua halaman; sekarang cuma orang yang buka halaman Galeri yang download itu — jadi tetap ada peningkatan buat SEMUA halaman lain
+- File baru: `src/pages/PageHome.tsx`, `PageWorld.tsx`, `PageEconomy.tsx`, `PageGameplay.tsx`, `PageGallery.tsx`, `PageFaq.tsx`. File yang diubah: `src/App.tsx` (rombak total bagian import & render halaman jadi lazy-load)
+- Sudah dites: `tsc --noEmit` bersih, `npm run build` sukses, dicek output `dist/` beneran kepecah jadi banyak chunk kecil (bukan cuma 1 file besar kayak sebelumnya)
+- Checklist `RENCANA.md` Tahap 3 poin "Performa": preload musik (v24) + code-splitting (langkah ini) selesai. Sisa: lazy-load gambar galeri yang belum kena `loading="lazy"`
+- **PENTING buat testing manual:** ini yang PALING PENTING dicek — coba klik pindah-pindah SEMUA halaman dari navbar (Beranda → Wilayah → Ekonomi → Gameplay → Galeri → Bantuan), pastikan semuanya tetap muncul normal kayak biasa, nggak ada yang blank/error, dan sempat kelihatan tulisan "Memuat..." sekilas pas pertama kali buka halaman tertentu (terutama di koneksi lambat/pas throttle network di DevTools)
+
+---
+
+## v24 — 22/07/2026 — Musik utama (bgm.mp3) di-preload lebih awal (Tahap 3, poin Performa — langkah 1)
+
+- Langkah pertama dari Tahap 3 (RENCANA.md, poin "Performa") — dimulai dari yang paling kerasa dampaknya buat user: musik
+- **Sebelum:** `bgm.mp3` (~4MB, musik utama yang di-toggle lewat tombol "Musik ON/OFF" di navbar) di-set `preload="metadata"` — cuma metadata (durasi dll) yang di-load duluan, isi audionya baru mulai didownload pas user klik "Musik ON". Ada jeda kecil sebelum musik beneran kedengeran
+- **Sesudah:** diganti `preload="auto"` — file audio-nya mulai di-download di BACKGROUND begitu halaman pertama kali dibuka, paralel sama proses loading lain (nggak ngeblokir render/interaksi apapun). Pas user klik "Musik ON" (biasanya beberapa detik setelah halaman kebuka), file-nya kemungkinan besar udah ke-buffer duluan, jadi musiknya langsung kedengeran tanpa jeda
+- **Musik ambient per-halaman (`useAmbientPlayer.ts`) SENGAJA TIDAK disentuh** — itu tetap dimuat lazy (baru di-load pas user beneran buka halaman itu), biar nggak buang-buang bandwidth download audio buat halaman yang mungkin belum tentu dikunjungi user
+- File yang diubah: `src/context/MusicContext.tsx`
+- Sudah dites: `tsc --noEmit` bersih, `npm run build` sukses
+- Checklist `RENCANA.md` Tahap 3 poin "Performa": ini baru sebagian (musik doang) — code-splitting & lazy-load gambar galeri masih menyusul kalau diminta lanjut
+- **PENTING buat testing manual:** susah dites cuma dari "kerasa" doang karena efeknya soal kecepatan network — coba buka DevTools (`F12`) → tab **Network** → filter **Media** → refresh halaman, lihat `bgm.mp3` mulai ke-download OTOMATIS tanpa perlu klik apa-apa dulu (sebelumnya nggak akan muncul di situ sampai tombol "Musik ON" diklik)
+
+---
+
 ## v23 — 22/07/2026 — Gallery: navigasi halaman di atas grid juga + auto-scroll pas ganti halaman
 
 - **Navigasi pagination sekarang muncul 2 kali** — di ATAS grid (baru) dan di BAWAH grid (sudah ada dari awal). Dipecah jadi komponen kecil `PaginationNav` (lokal di file yang sama) biar kode tombolnya nggak ditulis 2 kali

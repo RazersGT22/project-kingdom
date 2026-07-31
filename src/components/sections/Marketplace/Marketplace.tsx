@@ -83,7 +83,7 @@ export function Marketplace({ activePath }: MarketplaceProps) {
         className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-ember-gold/20 to-transparent"
       />
 
-      <div className="relative z-10 max-w-6xl mx-auto w-full">
+      <div className="relative z-10 max-w-[1400px] mx-auto w-full">
         <div data-reveal>
           <SectionHeading
             eyebrow="Medieval Marketplace"
@@ -153,7 +153,7 @@ export function Marketplace({ activePath }: MarketplaceProps) {
               dan pajak kastil secara dinamis berubah berdasarkan aktivitas pemain. Setiap keputusan dagang berdampak luas.
             </p>
             <div className="flex items-center justify-between gap-4 border-t border-parchment-white/10 pt-4 text-sm text-parchment-white/50">
-              <span className="min-w-0 truncate">Mata Uang Server: Gold Coins (GC)</span>
+              <span className="min-w-0 truncate">Mata Uang Server: Gold Coin (GC)</span>
               <span className="flex-shrink-0">Status Pasar: Stabil</span>
             </div>
           </div>

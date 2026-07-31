@@ -3,7 +3,7 @@ export function Footer() {
 
   return (
     <footer className="bg-[#09090c] border-t border-parchment-white/5 px-6 py-12 text-center md:text-left">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+      <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
         <div>
           <span className="font-heading text-lg text-ember-gold">RZ Survival</span>
           <p className="text-xs text-parchment-white/40 mt-2 max-w-sm">
@@ -26,7 +26,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto border-t border-parchment-white/5 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-parchment-white/35">
+      <div className="max-w-[1400px] mx-auto border-t border-parchment-white/5 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-parchment-white/35">
         <p>&copy; {currentYear} RZ Survival. Seluruh Hak Cipta Dilindungi.</p>
         <p>Tidak berafiliasi dengan Mojang Studios atau Microsoft.</p>
       </div>

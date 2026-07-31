@@ -1,5 +1,5 @@
 import { useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
-import { cn } from "@/utils";
+import { cn, prefersReducedMotion } from "@/utils";
 import { useSoundEffects } from "@/hooks";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -11,6 +11,8 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 // RENCANA.md Tahap 2 poin 2 — efek "magnetic cursor": tombol dikit "ketarik" ke
 // arah posisi kursor pas di-hover. Cuma aktif buat perangkat dengan mouse asli
 // (pointer: fine) — otomatis nggak aktif di HP/tablet (layar sentuh).
+// RENCANA.md Tahap 3 (Aksesibilitas) — JUGA otomatis nggak aktif kalau user
+// udah nyalain "Kurangi Gerakan" (prefers-reduced-motion) di OS/browser-nya.
 export function Button({
   children,
   variant = "primary",
@@ -45,7 +47,7 @@ export function Button({
     const hasRealMouse =
       typeof window !== "undefined" && window.matchMedia?.("(pointer: fine)").matches;
     const btn = buttonRef.current;
-    if (hasRealMouse && btn) {
+    if (hasRealMouse && !prefersReducedMotion() && btn) {
       const rect = btn.getBoundingClientRect();
       const relX = e.clientX - (rect.left + rect.width / 2);
       const relY = e.clientY - (rect.top + rect.height / 2);

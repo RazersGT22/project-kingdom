@@ -1,4 +1,5 @@
 import { useRef, useState, type HTMLAttributes, type ReactNode } from "react";
+import { prefersReducedMotion } from "@/utils";
 
 type TiltWrapperProps = HTMLAttributes<HTMLDivElement> & {
   children: ReactNode;
@@ -25,7 +26,10 @@ type TiltWrapperProps = HTMLAttributes<HTMLDivElement> & {
 //
 // Cuma aktif buat device dengan mouse asli (pointer: fine), sama kayak pola
 // magnetic cursor di Button.tsx — otomatis nggak aktif di HP/tablet (layar
-// sentuh, nggak ada konsep "posisi kursor").
+// sentuh, nggak ada konsep "posisi kursor"). RENCANA.md Tahap 3 (Aksesibilitas)
+// — JUGA otomatis nggak aktif kalau user udah nyalain "Kurangi Gerakan" di
+// OS/browser-nya (prefers-reduced-motion), efek 3D kayak gini yang paling
+// berpotensi bikin nggak nyaman buat yang sensitif motion.
 export function TiltWrapper({ children, maxTilt = 8, ...outerProps }: TiltWrapperProps) {
   const innerRef = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0 });
@@ -34,7 +38,7 @@ export function TiltWrapper({ children, maxTilt = 8, ...outerProps }: TiltWrappe
     const hasRealMouse =
       typeof window !== "undefined" && window.matchMedia?.("(pointer: fine)").matches;
     const el = innerRef.current;
-    if (hasRealMouse && el) {
+    if (hasRealMouse && !prefersReducedMotion() && el) {
       const rect = el.getBoundingClientRect();
       const px = (e.clientX - rect.left) / rect.width; // 0..1 dari kiri ke kanan
       const py = (e.clientY - rect.top) / rect.height; // 0..1 dari atas ke bawah

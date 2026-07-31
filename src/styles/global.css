@@ -167,3 +167,23 @@ body {
 iframe[title="Netlify identity widget" i] {
   z-index: 2147483647 !important;
 }
+
+/* RENCANA.md Tahap 3, poin Aksesibilitas — "kill switch" global buat SEMUA
+   animasi & transisi CSS di seluruh situs, aktif otomatis kalau user sudah
+   mengaktifkan setting "Kurangi Gerakan" (prefers-reduced-motion) di
+   OS/browser-nya. Ini nangkep animasi CSS murni (grain-shift, card-in,
+   fade-in, hover:scale, dst) dalam SATU aturan — nggak perlu diubah 1-1 per
+   komponen. Efek yang dikontrol lewat JavaScript (GSAP di useStaggerReveal,
+   tilt 3D di TiltWrapper, magnetic cursor di Button) TIDAK kena aturan CSS
+   ini, makanya masing-masing komponen itu djuga dicek manual lewat utility
+   prefersReducedMotion() di src/utils/. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

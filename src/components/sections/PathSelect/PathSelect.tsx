@@ -23,7 +23,7 @@ export function PathSelect() {
         className="absolute inset-0 bg-gradient-to-b from-obsidian-night via-[#0e0c0a] to-obsidian-night pointer-events-none"
       />
 
-      <div className="relative z-10 max-w-6xl mx-auto w-full">
+      <div className="relative z-10 max-w-[1400px] mx-auto w-full">
         <div data-reveal>
           <SectionHeading
             eyebrow="Pilih Jalanmu"

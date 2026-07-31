@@ -35,7 +35,7 @@ export function Trailer() {
         className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-ember-gold/20 to-transparent"
       />
 
-      <div className="relative z-10 max-w-6xl mx-auto w-full flex flex-col items-center text-center">
+      <div className="relative z-10 max-w-[1400px] mx-auto w-full flex flex-col items-center text-center">
         <SectionHeading
           eyebrow="Cinematic Trailer"
           title={trailerCopy.headline}

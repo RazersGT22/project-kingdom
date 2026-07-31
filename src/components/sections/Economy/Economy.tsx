@@ -62,7 +62,7 @@ export function Economy({ activePath }: EconomyProps) {
         className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-ember-gold/20 to-transparent"
       />
 
-      <div className="relative z-10 max-w-6xl mx-auto w-full">
+      <div className="relative z-10 max-w-[1400px] mx-auto w-full">
         <div data-reveal>
           <SectionHeading
             eyebrow="Server Economy"
@@ -85,7 +85,8 @@ export function Economy({ activePath }: EconomyProps) {
             <div data-reveal>
               <h3 className="font-heading text-2xl text-ember-gold mb-4">Sistem Keuangan Kerajaan</h3>
               <p className="text-sm text-parchment-white/70 leading-relaxed">
-                Kerajaan menggunakan mata uang tunggal resmi yang disebut **Gold Coins (GC)**. GC digunakan untuk seluruh
+                Kerajaan menggunakan mata uang tunggal resmi yang disebut{" "}
+                <strong className="text-parchment-white font-semibold">Gold Coin (GC)</strong>. GC digunakan untuk seluruh
                 aktivitas perdagangan, klaim wilayah, pembayaran pajak, hingga perekrutan tentara bayaran.
               </p>
             </div>

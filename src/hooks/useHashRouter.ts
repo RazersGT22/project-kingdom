@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 
-// Daftar route halaman yang tersedia
-export type AppRoute = "/" | "/world" | "/economy" | "/gameplay" | "/gallery" | "/faq";
+// Daftar route halaman yang tersedia. "/404" BUKAN route yang bisa dituju
+// langsung lewat navbar/link manapun — dia otomatis ke-set kalau hash di URL
+// nggak dikenal (RENCANA.md Tahap 3, poin Halaman 404).
+export type AppRoute = "/" | "/world" | "/economy" | "/gameplay" | "/gallery" | "/faq" | "/404";
 
 const VALID_ROUTES: AppRoute[] = ["/world", "/economy", "/gameplay", "/gallery", "/faq"];
 
@@ -10,10 +12,13 @@ function getRouteFromHash(): AppRoute {
   // Atau kosong / "#/" untuk home
   const raw = window.location.hash; // misal: "#/world"
   const path = raw.startsWith("#") ? raw.slice(1) : raw; // "/world"
+  if (path === "" || path === "/") return "/";
   if (VALID_ROUTES.includes(path as AppRoute)) {
     return path as AppRoute;
   }
-  return "/";
+  // Hash ada isinya tapi nggak cocok sama route manapun yang dikenal → 404,
+  // BUKAN diam-diam dibalikin ke Beranda kayak sebelumnya
+  return "/404";
 }
 
 export function useHashRouter() {

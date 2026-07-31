@@ -67,7 +67,7 @@ export function Castle({ activePath }: CastleProps) {
         className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-ember-gold/20 to-transparent"
       />
 
-      <div className="relative z-10 max-w-6xl mx-auto w-full">
+      <div className="relative z-10 max-w-[1400px] mx-auto w-full">
         {/* Eyebrow */}
         <div data-reveal>
           <SectionHeading

@@ -7,3 +7,4 @@ export * from "./useGsapReveal";
 export * from "./useSoundEffects";
 export * from "./useHashRouter";
 export * from "./useAmbientPlayer";
+export * from "./useDocumentTitle";

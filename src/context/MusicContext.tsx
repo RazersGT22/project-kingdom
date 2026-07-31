@@ -21,7 +21,12 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     const audio = new Audio(BGM_SRC);
     audio.loop = true;
     audio.volume = 0;
-    audio.preload = "metadata";
+    // "auto" (bukan "metadata") — biar browser mulai download file audio ini
+    // di BACKGROUND begitu halaman kebuka, paralel sama loading lain, TIDAK
+    // ngeblokir render. Tujuannya: pas user klik "Musik ON" (biasanya beberapa
+    // detik setelah halaman kebuka), file-nya udah ke-buffer duluan, jadi
+    // musiknya langsung kedengeran tanpa jeda nunggu download.
+    audio.preload = "auto";
     audioRef.current = audio;
 
     return () => {

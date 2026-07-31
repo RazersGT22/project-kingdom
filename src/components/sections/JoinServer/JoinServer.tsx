@@ -2,27 +2,12 @@ import { useRef, useState } from "react";
 import { joinServerCopy } from "@/data";
 import { useStaggerReveal } from "@/hooks";
 import { SectionHeading, Card, Button } from "@/components/ui";
-
-const faqList = [
-  {
-    q: "Apakah server ini berbayar?",
-    a: "Tidak, RZ Survival 100% gratis dimainkan untuk semua pemain Java maupun Bedrock. Semua fitur gameplay dasar dapat diakses tanpa biaya.",
-  },
-  {
-    q: "Bagaimana cara bergabung di Minecraft Bedrock (HP/Konsol)?",
-    a: "Gunakan alamat IP yang sama: play.rzsurvival.com dengan port default Bedrock: 19132. Server akan otomatis mendeteksi perangkat Anda.",
-  },
-  {
-    q: "Versi Minecraft berapa yang didukung?",
-    a: "Kami mendukung klien Minecraft versi 1.20 hingga versi rilis resmi paling terbaru untuk menjamin fitur-fitur blok terbaru dapat dinikmati.",
-  },
-];
+import { scrollToSection } from "@/utils";
 
 export function JoinServer() {
   const ref = useRef<HTMLElement>(null);
   useStaggerReveal(ref);
   const [copied, setCopied] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const ipAddress = "play.rzsurvival.com";
 
@@ -36,10 +21,6 @@ export function JoinServer() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
-  };
-
-  const toggleFaq = (index: number) => {
-    setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
   return (
@@ -142,34 +123,21 @@ export function JoinServer() {
           </a>
         </div>
 
-        {/* FAQs Short Accordion */}
-        <div className="max-w-3xl mx-auto mb-16" data-reveal>
-          <h3 className="font-heading text-xl text-ember-gold mb-6 text-center">Pertanyaan Umum (FAQ)</h3>
-          
-          <div className="flex flex-col gap-4">
-            {faqList.map((faq, index) => {
-              const isOpen = openFaqIndex === index;
-              return (
-                <div
-                  key={faq.q}
-                  className="border border-parchment-white/10 bg-obsidian-night/20 rounded-xl overflow-hidden"
-                >
-                  <button
-                    onClick={() => toggleFaq(index)}
-                    className="w-full text-left p-5 flex justify-between items-center text-sm font-heading text-parchment-white hover:text-ember-gold transition-colors"
-                  >
-                    <span>{faq.q}</span>
-                    <span className="text-ember-gold">{isOpen ? "▲" : "▼"}</span>
-                  </button>
-                  {isOpen && (
-                    <div className="px-5 pb-5 text-xs md:text-sm text-parchment-white/60 leading-relaxed border-t border-parchment-white/5 pt-3">
-                      {faq.a}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+        {/* Pointer ke FAQ lengkap — sengaja BUKAN accordion pertanyaan sendiri lagi.
+            Sebelumnya di sini ada 3 pertanyaan (cara join, versi Minecraft, berbayar/nggak)
+            yang topiknya PERSIS sama kayak yang udah dibahas lebih lengkap di section
+            Faq di bawah section ini (masih di halaman Bantuan yang sama) — dobel murni,
+            bukan cuma mirip. Diganti jadi 1 kalimat + tombol lompat ke situ. */}
+        <div className="max-w-3xl mx-auto mb-16 text-center" data-reveal>
+          <p className="text-sm text-parchment-white/60 mb-4">
+            Punya pertanyaan lain seputar server? Cek arsip pengetahuan lengkap kami di bawah.
+          </p>
+          <button
+            onClick={() => scrollToSection("#faq")}
+            className="text-ember-gold text-sm font-heading uppercase tracking-wider hover:text-parchment-white transition-colors"
+          >
+            Lihat Semua Pertanyaan (FAQ) ↓
+          </button>
         </div>
 
         {/* Big Final CTA */}

@@ -25,9 +25,14 @@ export function Navbar() {
       {/* Logo */}
       <button
         onClick={() => handleNav("/")}
-        className="font-heading text-lg text-parchment-white hover:text-ember-gold transition-colors"
+        className="flex items-center gap-2 font-heading text-lg text-parchment-white hover:text-ember-gold transition-colors"
       >
-        ⚜️ Project Kingdom
+        <img
+          src="/assets/images/logo-navbar.png"
+          alt="Project Kingdom"
+          className="h-9 w-auto"
+        />
+        Project Kingdom
       </button>
 
       {/* Desktop Navigation */}

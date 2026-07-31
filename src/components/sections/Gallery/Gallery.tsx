@@ -10,11 +10,15 @@ const ALL_CATEGORIES = ["Semua", ...Array.from(new Set(galleryItems.map((i) => i
 // Jumlah foto per halaman dibuat DINAMIS mengikuti lebar layar, supaya jumlah
 // baris konsisten (10 baris) di semua ukuran layar — cuma jumlah kolomnya yang
 // beda. Breakpoint di bawah ini HARUS sama dengan grid className di JSX
-// ("grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"): mobile 1 kolom → 10 foto/halaman,
-// tablet 2 kolom → 20 foto/halaman, desktop 3 kolom → 30 foto/halaman.
+// ("grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"):
+// mobile 1 kolom → 10 foto/halaman, tablet 2 kolom → 20, desktop kecil 3 kolom
+// → 30, laptop besar 4 kolom → 40, layar lebar (≥1536px, termasuk kebanyakan
+// monitor 27" Full HD 1920px) 5 kolom → 50 foto/halaman.
 const ROWS_PER_PAGE = 10;
 
 function getColumnsForWidth(width: number): number {
+  if (width >= 1536) return 5; // breakpoint 2xl
+  if (width >= 1280) return 4; // breakpoint xl
   if (width >= 1024) return 3; // breakpoint lg
   if (width >= 640) return 2; // breakpoint sm
   return 1; // mobile
@@ -152,7 +156,7 @@ export function Gallery() {
       />
       <div aria-hidden="true" className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-ember-gold/20 to-transparent" />
 
-      <div className="relative z-10 max-w-6xl mx-auto w-full">
+      <div className="relative z-10 max-w-[1400px] mx-auto w-full">
         <div data-reveal>
           <SectionHeading eyebrow="Galeri Kerajaan" title={galleryCopy.headline} className="mb-4" />
         </div>
@@ -203,7 +207,7 @@ export function Gallery() {
         )}
 
         {/* Grid galeri */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
           {paginated.map((item, index) => (
             <TiltWrapper
               key={item.id}
